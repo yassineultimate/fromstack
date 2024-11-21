@@ -33,7 +33,7 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="absolute top-4 right-4">
         <div className="bg-white/10 backdrop-blur-sm dark:bg-gray-800/50 rounded-lg p-1 shadow-lg">
-          <ThemeToggle />
+    
         </div>
       </div>
       

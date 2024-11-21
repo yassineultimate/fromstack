@@ -1,41 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import { Staff } from '../types/staff';
+import { Staff, SalonCollaData } from '../types/staff';
 import AddStaffModal from '../components/staff/AddStaffModal';
 import DayOffModal from '../components/staff/DayOffModal';
 import StaffCard from '../components/staff/StaffCard';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
+import { getallCollaborateurBYsalon } from '../../Service/CollaboratorService';
+import { convertSalonCollaToStaff } from '../../Service/util';
 
 const StaffPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDayOffModal, setShowDayOffModal] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [salonCollaborateurData, setSalonCollaborateurData] = useState<Staff[]>([]);
   
-  const [staffMembers, setStaffMembers] = useState<Staff[]>([
-    {
-      id: '1',
-      name: 'Sophie Martin',
-      speciality: 'Hair Stylist',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80',
-      address: '123 Rue de Paris',
-      phone: '+33 1 23 45 67 89',
-      daysOff: []
-    },
-    {
-      id: '2',
-      name: 'Marie Dubois',
-      speciality: 'Nail Artist',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=256&h=256&q=80',
-      address: '456 Avenue des Champs-Élysées',
-      phone: '+33 1 98 76 54 32',
-      daysOff: []
-    }
-  ]);
+  useEffect(() => {
+    const fetchCalloborateurSalonData = async () => {
+      try {
+        const data: SalonCollaData[] = await getallCollaborateurBYsalon(5);
+        
+        const saloncoll= convertSalonCollaToStaff(data);
+          
+        
+        setSalonCollaborateurData(saloncoll);
+      } catch (err) {
+        console.error('Error fetching salon data:', err);
+      }
+    };
+
+    fetchCalloborateurSalonData();
+  }, []);
 
   const { query, setQuery, filteredItems: filteredStaff } = useSearch(
-    staffMembers,
-    ['name', 'speciality', 'phone', 'address']
+    salonCollaborateurData,
+    ['name', 'speciality']
   );
 
   const handleAddStaff = (newStaff: Omit<Staff, 'id' | 'daysOff'>) => {
@@ -44,26 +43,22 @@ const StaffPage = () => {
       id: Date.now().toString(),
       daysOff: []
     };
-    setStaffMembers(prev => [...prev, staff]);
+    setSalonCollaborateurData(prev => [...prev, staff]);
     setShowAddModal(false);
   };
 
   const handleDeleteStaff = (id: string) => {
     if (window.confirm('Are you sure you want to delete this staff member?')) {
-      setStaffMembers(prev => prev.filter(staff => staff.id !== id));
+      setSalonCollaborateurData(prev => prev.filter(staff => staff.id !== id));
     }
   };
 
   const handleAddDayOff = (staffId: string, dayOff: { start: string; end: string; reason?: string }) => {
-    setStaffMembers(prev => prev.map(staff => {
-      if (staff.id === staffId) {
-        return {
-          ...staff,
-          daysOff: [...staff.daysOff, dayOff]
-        };
-      }
-      return staff;
-    }));
+    setSalonCollaborateurData(prev => prev.map(staff => 
+      staff.id === staffId 
+        ? { ...staff, daysOff: [...staff.daysOff, dayOff] }
+        : staff
+    ));
   };
 
   return (
@@ -75,7 +70,7 @@ const StaffPage = () => {
           className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
-          <span>Add Staff</span>
+          <span>Ajouter Staff</span>
         </button>
       </div>
 

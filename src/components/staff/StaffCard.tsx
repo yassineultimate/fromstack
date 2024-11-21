@@ -1,7 +1,7 @@
 import React from 'react';
 import { Edit, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
 import { Staff } from '../../types/staff';
-
+import {  icons, images } from '../../constants';
 interface StaffCardProps {
   staff: Staff;
   onEdit: (staff: Staff) => void;
@@ -15,7 +15,7 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
       <div className="p-4">
         <div className="flex items-center space-x-4">
           <img
-            src={staff.image}
+            src={staff.image? { uri: staff.image} : images.user1}
             alt={staff.name}
             className="w-16 h-16 rounded-full object-cover"
           />

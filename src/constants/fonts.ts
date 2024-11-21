@@ -1,0 +1,20 @@
+export const FONTS = {
+    black: new URL('../assets/fonts/Urbanist-Black.ttf', import.meta.url).href,
+    blackItalic: new URL('../assets/fonts/Urbanist-BlackItalic.ttf', import.meta.url).href,
+    bold: new URL('../assets/fonts/Urbanist-Bold.ttf', import.meta.url).href,
+    boldItalic: new URL('../assets/fonts/Urbanist-BoldItalic.ttf', import.meta.url).href,
+    extraBold: new URL('../assets/fonts/Urbanist-ExtraBold.ttf', import.meta.url).href,
+    extraBoldItalic: new URL('../assets/fonts/Urbanist-ExtraBoldItalic.ttf', import.meta.url).href,
+    extraLight: new URL('../assets/fonts/Urbanist-ExtraLight.ttf', import.meta.url).href,
+    extraLightItalic: new URL('../assets/fonts/Urbanist-ExtraLightItalic.ttf', import.meta.url).href,
+    italic: new URL('../assets/fonts/Urbanist-Italic.ttf', import.meta.url).href,
+    light: new URL('../assets/fonts/Urbanist-Light.ttf', import.meta.url).href,
+    lightItalic: new URL('../assets/fonts/Urbanist-LightItalic.ttf', import.meta.url).href,
+    medium: new URL('../assets/fonts/Urbanist-Medium.ttf', import.meta.url).href,
+    mediumItalic: new URL('../assets/fonts/Urbanist-MediumItalic.ttf', import.meta.url).href,
+    regular: new URL('../assets/fonts/Urbanist-Regular.ttf', import.meta.url).href,
+    semiBold: new URL('../assets/fonts/Urbanist-SemiBold.ttf', import.meta.url).href,
+    semiBoldItalic: new URL('../assets/fonts/Urbanist-SemiBoldItalic.ttf', import.meta.url).href,
+    thin: new URL('../assets/fonts/Urbanist-Thin.ttf', import.meta.url).href,
+    thinItalic: new URL('../assets/fonts/Urbanist-ThinItalic.ttf', import.meta.url).href
+}

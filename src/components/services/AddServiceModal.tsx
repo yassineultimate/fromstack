@@ -1,31 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { Service } from '../../types/service';
+import { createservicebySalon } from '../../../Service/ServiceService';
 
+import{compressImage} from '../../../Service/util'
 interface AddServiceModalProps {
   onClose: () => void;
   onAdd: (service: Omit<Service, 'id'>) => void;
 }
 
 const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     duration: '',
-    image: '',
-    description: '',
-    category: '',
-    isActive: true
+    image: ''
+  
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+ 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({
+
+    try {
+  
+    const newservice = {
       ...formData,
-      price: Number(formData.price),
-      duration: Number(formData.duration)
-    });
-    onClose();
+      image: selectedImage || formData.image
+    };
+      const response = await  createservicebySalon(newservice,5)  
+      
+      if (response.service.id>0) {
+   
+        const addedStaffTemplate: Service = {
+          id: response.service.id.toString(), // Convert to string to match interface
+          name: response.service.name,
+          price: Number(response.service.price),
+          image: response.service.image,
+          duration: Number( response.service.duration), // Provide default if not in response
+         
+        };
+        onAdd(addedStaffTemplate);
+        onClose();
+      } else {
+        console.error('Failed to add staff');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+
+   
   };
+
+
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -39,7 +69,19 @@ const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
       [e.target.name]: value
     }));
   };
-
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-6">
@@ -60,7 +102,7 @@ const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prix Dinars</label>
               <input
                 type="number"
                 name="price"
@@ -88,62 +130,41 @@ const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              required
-            >
-              <option value="">Select category</option>
-              <option value="Hair">Hair</option>
-              <option value="Nails">Nails</option>
-              <option value="Makeup">Makeup</option>
-              <option value="Spa">Spa</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+          
+
+         
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter image URL"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter service description"
-              rows={3}
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="isActive"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-              Service is active
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image service
             </label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <div className="mt-1 flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Choose File
+              </button>
+              {selectedImage && (
+                <div className="relative w-16 h-16">
+                  <img
+                    src={selectedImage}
+                    alt="Preview"
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </div>
+              )}
+            </div>
           </div>
+ 
 
           <div className="flex space-x-3 pt-4">
             <button

@@ -1,34 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState,useRef } from 'react';
 import { SalonPackage } from '../../types/package';
-
+import { createPackagebySalon } from '../../../Service/PackageService';
 interface AddPackageModalProps {
   onClose: () => void;
   onAdd: (pkg: Omit<SalonPackage, 'id'>) => void;
 }
 
 const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
     duration: '',
     image: '',
     description: '',
-    discount: '',
-    isActive: true,
-    services: [] as string[]
+   
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({
-      ...formData,
-      price: Number(formData.price),
-      duration: Number(formData.duration),
-      discount: formData.discount ? Number(formData.discount) : undefined
-    });
-    onClose();
-  };
 
+
+    try {
+  
+      const newpackage = {
+        ...formData,
+        image: selectedImage || formData.image
+      };
+        const response = await  createPackagebySalon(newpackage,5)  
+        
+        if (response.package.id>0) {
+     
+          const addedStaffTemplate: SalonPackage = {
+            id: response.package.id.toString(), // Convert to string to match interface
+            name: response.package.name,
+            price: Number(response.package.price),
+            image: response.package.image,
+            duration: Number( response.package.duration), // Provide default if not in response
+            description:response.package.description
+          };
+          onAdd(addedStaffTemplate);
+          onClose();
+        } else {
+          console.error('Failed to add staff');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+  
+  
+     
+    };
+    
+ 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -41,7 +66,19 @@ const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
       [e.target.name]: value
     }));
   };
-
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-6">
@@ -90,32 +127,39 @@ const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
-            <input
-              type="number"
-              name="discount"
-              value={formData.discount}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter discount percentage"
-              min="0"
-              max="100"
-            />
-          </div>
+          
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image Package
+            </label>
             <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter image URL"
-              required
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
             />
+            <div className="mt-1 flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Choose File
+              </button>
+              {selectedImage && (
+                <div className="relative w-16 h-16">
+                  <img
+                    src={selectedImage}
+                    alt="Preview"
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </div>
+              )}
+            </div>
           </div>
+ 
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -129,19 +173,7 @@ const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
             />
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="isActive"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-              Package is active
-            </label>
-          </div>
+          
 
           <div className="flex space-x-3 pt-4">
             <button

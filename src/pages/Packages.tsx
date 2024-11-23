@@ -1,55 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { SalonPackage } from '../types/package';
 import PackageCard from '../components/packages/PackageCard';
 import AddPackageModal from '../components/packages/AddPackageModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
-
+import { getPackageofSalonByid,deletePackage } from '../../Service/PackageService';
 const PackagesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [packages, setPackages] = useState<SalonPackage[]>([
-    {
-      id: '1',
-      name: 'Bridal Package',
-      price: 299,
-      duration: 180,
-      image: 'https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-      isActive: true,
-      description: 'Complete bridal beauty package including hair, makeup, and nails',
-      services: ['1', '2'],
-      discount: 15
-    },
-    {
-      id: '2',
-      name: 'Spa Day Package',
-      price: 199,
-      duration: 120,
-      image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-      isActive: true,
-      description: 'Relaxing spa day including massage and facial treatments',
-      services: ['3', '4'],
-      discount: 10
-    }
-  ]);
+  const [packages, setPackages] =  useState<SalonPackage[]>([]);
+  useEffect(() => {
+    const fetchCalloborateurSalonData = async () => {
+      try {
+        const data: SalonPackage[] = await getPackageofSalonByid(5); 
+        
+     
+          
+        
+        setPackages(data);
+      } catch (err) {
+        console.error('Error fetching salon data:', err);
+      }
+    };
+
+    fetchCalloborateurSalonData();
+  }, []);
 
   const handleAddPackage = (newPackage: Omit<SalonPackage, 'id'>) => {
     setPackages(prev => [...prev, { ...newPackage, id: Date.now().toString() }]);
   };
 
-  const handleDeletePackage = (id: string) => {
+  const handleDeletePackage= async (id: string) => {
     if (window.confirm('Are you sure you want to delete this package?')) {
-      setPackages(prev => prev.filter(p => p.id !== id));
+
+      try {
+        const data = await deletePackage(5,parseInt(id));
+        setPackages(prev => prev.filter(p => p.id !== id));
+      } catch (error) {
+        console.error('Erreur lors de la suppression du membre du personnel:', error);
+      }
+  
     }
   };
 
-  const handleToggleActive = (id: string) => {
-    setPackages(prev => prev.map(pkg => 
-      pkg.id === id ? { ...pkg, isActive: !pkg.isActive } : pkg
-    ));
-  };
-
+ 
   const { query, setQuery, filteredItems: filteredPackages } = useSearch(
     packages,
     ['name', 'description']
@@ -85,7 +80,7 @@ const PackagesPage = () => {
               key={pkg.id}
               package={pkg}
               onDelete={handleDeletePackage}
-              onToggleActive={handleToggleActive}
+           
             />
           ))}
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Staff, SalonCollaData } from '../types/staff';
 import AddStaffModal from '../components/staff/AddStaffModal';
@@ -6,7 +6,7 @@ import DayOffModal from '../components/staff/DayOffModal';
 import StaffCard from '../components/staff/StaffCard';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
-import { getallCollaborateurBYsalon } from '../../Service/CollaboratorService';
+import { getallCollaborateurBYsalon,deleteStaff } from '../../Service/CollaboratorService';
 import { convertSalonCollaToStaff } from '../../Service/util';
 
 const StaffPage = () => {
@@ -18,9 +18,9 @@ const StaffPage = () => {
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data: SalonCollaData[] = await getallCollaborateurBYsalon(5);
+        const data: SalonCollaData[] = await getallCollaborateurBYsalon(5); 
         
-        const saloncoll= convertSalonCollaToStaff(data);
+        const saloncoll= await convertSalonCollaToStaff(data);
           
         
         setSalonCollaborateurData(saloncoll);
@@ -47,9 +47,14 @@ const StaffPage = () => {
     setShowAddModal(false);
   };
 
-  const handleDeleteStaff = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this staff member?')) {
-      setSalonCollaborateurData(prev => prev.filter(staff => staff.id !== id));
+  const handleDeleteStaff = async (id: string) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce membre du staff?')) {
+      try {
+        const data = await deleteStaff(parseInt(id));
+        setSalonCollaborateurData(prev => prev.filter(staff => staff.id !=id));
+      } catch (error) {
+        console.error('Erreur lors de la suppression du membre du personnel:', error);
+      }
     }
   };
 

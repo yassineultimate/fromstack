@@ -4,7 +4,5 @@ export interface Service {
   price: number;
   duration: number; // in minutes
   image: string;
-  isActive: boolean;
-  description?: string;
-  category?: string;
+ 
 }

@@ -2,7 +2,7 @@ export interface Staff {
   id: string;
   name: string;
   speciality: string;
-  image: Uint8Array | null;
+  image: string
   address: string;
   phone: string;
   daysOff: {
@@ -19,4 +19,11 @@ export interface SalonCollaData {
   profilePicture: Uint8Array | null;
   Phone: string;
   Open: boolean;
+}
+export interface DayOff {
+  id: number;
+  startDate: string;
+  endDate: string;
+  reason: string;
+ 
 }

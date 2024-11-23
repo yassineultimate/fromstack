@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Staff } from '../../types/staff';
-
+import { adddayof } from '../../../Service/CollaborateurOffDaysService';
 interface DayOffModalProps {
   staff: Staff;
   onClose: () => void;
@@ -13,10 +13,29 @@ const DayOffModal = ({ staff, onClose, onAddDayOff }: DayOffModalProps) => {
     end: '',
     reason: ''
   });
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const [error, setError] = useState<string>('');
+  const validateDates = () => {
+    const startDate = new Date(formData.start);
+    const endDate = new Date(formData.end);
+    
+    if (endDate < startDate) {
+      setError('End date cannot be before start date');
+      return false;
+    }
+    
+    if (startDate < new Date()) {
+      setError('Start date cannot be in the past');
+      return false;
+    }
+    
+    return true;
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAddDayOff(staff.id, formData);
+    if (!validateDates()) {
+      return;
+    }
+    const sata= await  adddayof(parseInt(staff.id), formData.reason,formData.start,formData.end);
     onClose();
   };
 
@@ -69,6 +88,9 @@ const DayOffModal = ({ staff, onClose, onAddDayOff }: DayOffModalProps) => {
               rows={3}
             />
           </div>
+          {error && (
+            <div className="text-red-500 text-sm">{error}</div>
+          )}
           <div className="flex space-x-3 pt-4">
             <button
               type="button"

@@ -1,14 +1,14 @@
 import React from 'react';
-import { Trash2, Clock, DollarSign, ToggleLeft, ToggleRight, Percent } from 'lucide-react';
+import { Trash2, Clock, DollarSign, ToggleLeft, ToggleRight, Percent,Wallet2Icon } from 'lucide-react';
 import { SalonPackage } from '../../types/package';
 
 interface PackageCardProps {
   package: SalonPackage;
   onDelete: (id: string) => void;
-  onToggleActive: (id: string) => void;
+ 
 }
 
-const PackageCard = ({ package: pkg, onDelete, onToggleActive }: PackageCardProps) => {
+const PackageCard = ({ package: pkg, onDelete }: PackageCardProps) => {
   return (
     <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
       <img
@@ -20,23 +20,9 @@ const PackageCard = ({ package: pkg, onDelete, onToggleActive }: PackageCardProp
         <div className="flex justify-between items-start">
           <div>
             <h3 className="text-lg font-semibold text-gray-900">{pkg.name}</h3>
-            {pkg.discount && (
-              <span className="inline-flex items-center text-sm text-green-600">
-                <Percent size={14} className="mr-1" />
-                {pkg.discount}% off
-              </span>
-            )}
+           
           </div>
-          <button
-            onClick={() => onToggleActive(pkg.id)}
-            className={`p-1 rounded-lg ${
-              pkg.isActive 
-                ? 'text-green-600 hover:text-green-700' 
-                : 'text-gray-400 hover:text-gray-500'
-            }`}
-          >
-            {pkg.isActive ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-          </button>
+           
         </div>
 
         {pkg.description && (
@@ -45,8 +31,8 @@ const PackageCard = ({ package: pkg, onDelete, onToggleActive }: PackageCardProp
 
         <div className="mt-4 space-y-2">
           <div className="flex items-center text-sm text-gray-600">
-            <DollarSign size={16} className="mr-2" />
-            ${pkg.price}
+            <Wallet2Icon size={16} className="mr-2" />
+             {pkg.price} dinars
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <Clock size={16} className="mr-2" />

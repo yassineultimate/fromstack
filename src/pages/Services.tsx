@@ -1,59 +1,57 @@
-import React, { useState } from 'react';
+import  { useState,useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Service } from '../types/service';
 import ServiceCard from '../components/services/ServiceCard';
 import AddServiceModal from '../components/services/AddServiceModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
-
+import { getServiceofSalonByid,deleteService } from '../../Service/ServiceService';
 const ServicesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [services, setServices] = useState<Service[]>([
-    {
-      id: '1',
-      name: 'Haircut & Styling',
-      price: 50,
-      duration: 60,
-      image: 'https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-      isActive: true,
-      description: 'Professional haircut and styling service',
-      category: 'Hair'
-    },
-    {
-      id: '2',
-      name: 'Manicure',
-      price: 35,
-      duration: 45,
-      image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80',
-      isActive: true,
-      description: 'Complete manicure treatment',
-      category: 'Nails'
-    }
-  ]);
+  const [services, setServices] =  useState<Service[]>([]);
+
+  useEffect(() => {
+    const fetchCalloborateurSalonData = async () => {
+      try {
+        const data: Service[] = await getServiceofSalonByid(5); 
+        
+     
+          
+        
+        setServices(data);
+      } catch (err) {
+        console.error('Error fetching salon data:', err);
+      }
+    };
+
+    fetchCalloborateurSalonData();
+  }, []);
 
   const handleAddService = (newService: Omit<Service, 'id'>) => {
     setServices(prev => [...prev, { ...newService, id: Date.now().toString() }]);
   };
 
-  const handleDeleteService = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this service?')) {
-      setServices(prev => prev.filter(s => s.id !== id));
+  const handleDeleteService  = async (id: string) => {
+    if (window.confirm('Etes-vous sûr de vouloir supprimer ce service?')) {
+      try {
+        const data = await deleteService(5,parseInt(id));
+        setServices(prev => prev.filter(s => s.id !== id));
+      } catch (error) {
+        console.error('Erreur lors de la suppression du membre du personnel:', error);
+      }
+      
     }
   };
 
-  const handleToggleActive = (id: string) => {
-    setServices(prev => prev.map(service => 
-      service.id === id ? { ...service, isActive: !service.isActive } : service
-    ));
-  };
+ 
 
  
 
   const { query, setQuery, filteredItems: filteredServices } = useSearch(
     services,
-    ['name', 'category', 'description']
+    ['name']
   );
   
 
@@ -87,7 +85,7 @@ const ServicesPage = () => {
               key={service.id}
               service={service}
               onDelete={handleDeleteService}
-              onToggleActive={handleToggleActive}
+              
             />
           ))}
         </div>

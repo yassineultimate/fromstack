@@ -15,7 +15,7 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
       <div className="p-4">
         <div className="flex items-center space-x-4">
           <img
-            src={staff.image? { uri: staff.image} : images.user1}
+            src= {staff.image}
             alt={staff.name}
             className="w-16 h-16 rounded-full object-cover"
           />
@@ -24,20 +24,9 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
             <p className="text-sm text-gray-500">{staff.speciality}</p>
           </div>
         </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center text-sm text-gray-600">
-            <Phone size={16} className="mr-2" />
-            {staff.phone}
-          </div>
-          <div className="flex items-center text-sm text-gray-600">
-            <MapPin size={16} className="mr-2" />
-            {staff.address}
-          </div>
-        </div>
-        
+ 
         <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Days Off</h4>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">jours de congé</h4>
           <div className="flex flex-wrap gap-2">
             {staff.daysOff.map((period, index) => (
               <div
@@ -63,15 +52,10 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
             className="inline-flex items-center text-sm text-primary-600 hover:text-primary-700"
           >
             <Calendar size={16} className="mr-1" />
-            Add Days Off
+            Ajouter des jours de congé
           </button>
           <div className="flex space-x-2">
-            <button 
-              onClick={() => onEdit(staff)}
-              className="p-1 text-gray-600 hover:text-gray-900"
-            >
-              <Edit size={18} />
-            </button>
+          
             <button 
               onClick={() => onDelete(staff.id)}
               className="p-1 text-red-600 hover:text-red-700"

@@ -211,13 +211,17 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg w-full max-w-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Add New Booking</h3>
-        {isSearching && (
-          <div className="mb-4 text-sm text-blue-600">
-            Searching for existing user...
-          </div>
-        )}
+      <div className="bg-white rounded-lg w-full max-w-md flex flex-col max-h-[90vh]"> {/* Added max-h-[90vh] */}
+        <div className="p-6 border-b">
+          <h3 className="text-lg font-semibold">Add New Booking</h3>
+        </div>
+        
+        <div className="p-6 overflow-y-auto flex-1"> {/* Added overflow-y-auto and flex-1 */}
+          {isSearching && (
+            <div className="mb-4 text-sm text-blue-600">
+              Searching for existing user...
+            </div>
+          )}
         {!isSearching && !isNewUser && (
           <div className="mb-4 text-sm text-green-600">
             Existing user found and details populated
@@ -409,6 +413,7 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
 )}
         </form>
       </div>
+    </div>
     </div>
   );
 };

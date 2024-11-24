@@ -28,14 +28,14 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-2">
           <Calendar className="text-primary-600" size={24} />
-          <h2 className="text-xl font-semibold">Salon Holidays</h2>
+          <h2 className="text-xl font-semibold">Vacances</h2>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
           className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
-          <span>Add Holiday</span>
+          <span>Ajouter des vacances</span>
         </button>
       </div>
 
@@ -44,7 +44,7 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date
+              Date de début
               </label>
               <input
                 type="date"
@@ -56,7 +56,7 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date
+                Date de fin
               </label>
               <input
                 type="date"
@@ -69,7 +69,7 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Reason
+            Raison
             </label>
             <input
               type="text"

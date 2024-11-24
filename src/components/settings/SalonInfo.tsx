@@ -30,13 +30,13 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
     <div>
       <div className="flex items-center space-x-2 mb-6">
         <Info className="text-primary-600" size={24} />
-        <h2 className="text-xl font-semibold">Salon Information</h2>
+        <h2 className="text-xl font-semibold">Informations sur le salon</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Salon Name
+          Nom du salon
           </label>
           <input
             type="text"
@@ -50,7 +50,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Short Description
+          Brève description
           </label>
           <input
             type="text"
@@ -61,13 +61,13 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             required
           />
           <p className="mt-1 text-sm text-gray-500">
-            A brief description that appears in search results and cards
+          Une brève description qui apparaît dans les résultats de recherche et les cartes
           </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Full Description
+          Description complète
           </label>
           <textarea
             name="longDescription"
@@ -78,7 +78,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             required
           />
           <p className="mt-1 text-sm text-gray-500">
-            Detailed description of your salon, services, and unique features
+          Description détaillée de votre salon, de vos services et de vos caractéristiques uniques
           </p>
         </div>
 
@@ -87,7 +87,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             type="submit"
             className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
           >
-            Save Changes
+            Enregistrer les modifications
           </button>
         </div>
       </form>

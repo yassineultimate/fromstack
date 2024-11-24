@@ -15,14 +15,17 @@ const PhotoGallery = ({
   onDeletePhoto
 }: PhotoGalleryProps) => {
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newPhotoUrl, setNewPhotoUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedType, setSelectedType] = useState<'photos' | 'portfolioImages'>('photos');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddPhotos(selectedType, [newPhotoUrl]);
-    setNewPhotoUrl('');
-    setShowAddForm(false);
+    if (selectedFile) {
+      const fileUrl = URL.createObjectURL(selectedFile);
+      onAddPhotos(selectedType, [fileUrl]);
+      setSelectedFile(null);
+      setShowAddForm(false);
+    }
   };
 
   return (
@@ -58,14 +61,18 @@ const PhotoGallery = ({
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image URL
+            Sélectionner une photo
             </label>
             <input
-              type="url"
-              value={newPhotoUrl}
-              onChange={(e) => setNewPhotoUrl(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter image URL"
+              type="file"
+              onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-lg file:border-0
+                file:text-sm file:font-semibold
+                file:bg-primary-600 file:text-white
+                hover:file:bg-primary-700
+                file:transition-colors"
               required
             />
           </div>

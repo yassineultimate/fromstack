@@ -7,13 +7,13 @@ import PhotoGallery from '../components/settings/PhotoGallery';
 import SalonInfo from '../components/settings/SalonInfo';
 
 const defaultBusinessHours: SalonHours[] = [
-  { day: 'monday', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'tuesday', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'wednesday', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'thursday', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'friday', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'saturday', open: '10:00', close: '16:00', isClosed: false },
-  { day: 'sunday', open: '00:00', close: '00:00', isClosed: true },
+  { day: 'Lundi', open: '09:00', close: '18:00', isClosed: false },
+  { day: 'Mardi', open: '09:00', close: '18:00', isClosed: false },
+  { day: 'Mercredi', open: '09:00', close: '18:00', isClosed: false },
+  { day: 'Jeudi', open: '09:00', close: '18:00', isClosed: false },
+  { day: 'Vendredi', open: '09:00', close: '18:00', isClosed: false },
+  { day: 'Samedi', open: '10:00', close: '16:00', isClosed: false },
+  { day: 'Dimanche', open: '00:00', close: '00:00', isClosed: true },
 ];
 
 const Settings = () => {
@@ -67,9 +67,9 @@ const Settings = () => {
   };
 
   const tabs = [
-    { id: 'info', label: 'Salon Information', icon: Info },
-    { id: 'hours', label: 'Business Hours', icon: Clock },
-    { id: 'holidays', label: 'Holidays', icon: Calendar },
+    { id: 'info', label: 'Informations sur le salon', icon: Info },
+    { id: 'hours', label: 'Heures d\'ouverture', icon: Clock },
+    { id: 'holidays', label: 'Vacances', icon: Calendar },
     { id: 'photos', label: 'Photos & Portfolio', icon: Camera },
   ];
 

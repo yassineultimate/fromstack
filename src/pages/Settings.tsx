@@ -1,34 +1,93 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Camera, Clock, Calendar, Info } from 'lucide-react';
-import { SalonSettings, SalonHours, SalonHoliday } from '../types/salon';
+import { SalonSettings, SalonHours, SalonHoliday,dayMap } from '../types/salon';
 import BusinessHours from '../components/settings/BusinessHours';
 import HolidayManager from '../components/settings/HolidayManager';
 import PhotoGallery from '../components/settings/PhotoGallery';
 import SalonInfo from '../components/settings/SalonInfo';
-
-const defaultBusinessHours: SalonHours[] = [
-  { day: 'Lundi', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'Mardi', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'Mercredi', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'Jeudi', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'Vendredi', open: '09:00', close: '18:00', isClosed: false },
-  { day: 'Samedi', open: '10:00', close: '16:00', isClosed: false },
-  { day: 'Dimanche', open: '00:00', close: '00:00', isClosed: true },
-];
+import { getSalonsAttributeByID } from '../../Service/SalonService';
+import { formatHour ,transformHolidays} from '../../Service/util';
+ 
+ 
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [settings, setSettings] = useState<SalonSettings>({
-    id: '1',
-    name: 'Beauty Salon',
-    shortDescription: 'Your beauty destination in the heart of the city',
-    longDescription: 'Detailed description of the salon...',
+    id: '',
+    name: '',
+    shortDescription: '',
+    longDescription: '',
     photos: [],
     portfolioImages: [],
-    businessHours: defaultBusinessHours,
-    holidays: []
+    businessHours: [],
+    holidays: [],
+    latitude: null,
+    longitude: null,
+    durreRendezvous: null
   });
+ 
 
+  useEffect(() => {
+    const fetchSalonData = async () => {
+      try {
+        const data = await getSalonsAttributeByID(5);
+        type DayNumber = keyof typeof dayMap;
+         
+        // Transform photos array - remove null values
+        const photos = [
+          data.image1,
+          data.image2,
+          data.image3,
+          data.image4
+        ].filter((img): img is string => img !== null);
+  
+        // Transform portfolio images array - remove null values
+        const portfolioImages = [
+          data.imagegal1, data.imagegal2, data.imagegal3, data.imagegal4,
+          data.imagegal5, data.imagegal6, data.imagegal7, data.imagegal8,
+          data.imagegal9, data.imagegal10, data.imagegal11, data.imagegal12,
+          data.imagegal13, data.imagegal14, data.imagegal15
+        ].filter((img): img is string => img !== null);
+  
+        // Transform Calendars to match SalonHours interface
+        const businessHours: SalonHours[] = data.Calendars.map((calendar: any) => ({
+             
+          day: dayMap[calendar.jour as DayNumber],
+          open: formatHour(calendar.heure_début) || '',
+          close: formatHour(calendar.heure_fin) || '',
+          isClosed: calendar.isClosed || false
+        }));
+  
+        // Transform SalonOffDays to match SalonHoliday interface
+        const holidays: SalonHoliday[] = transformHolidays(data.SalonOffDays);
+       
+  
+        // Extract coordinates from position_géographique
+        const latitude = data.position_géographique?.coordinates[1] ?? null;
+        const longitude = data.position_géographique?.coordinates[0] ?? null;
+  
+        const transformedSalonData: SalonSettings = {
+          id: String(data.id),
+          name: data.name,
+          shortDescription: data.DescriptionPetite || '',
+          longDescription: data.Description || '',
+          photos,
+          portfolioImages,
+          businessHours,
+          holidays,
+          latitude,
+          longitude,
+          durreRendezvous: data.DureeRendezVous || null
+        };
+  
+        setSettings(transformedSalonData);
+      } catch (err) {
+        console.error('Error fetching salon data:', err);
+      }
+    };
+  
+    fetchSalonData();
+  }, []);
   const handleUpdateInfo = (info: Pick<SalonSettings, 'name' | 'shortDescription' | 'longDescription'>) => {
     setSettings(prev => ({ ...prev, ...info }));
   };

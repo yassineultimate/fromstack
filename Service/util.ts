@@ -1,7 +1,8 @@
  
 import { Staff, SalonCollaData,DayOff } from '../src/types/staff';
 import {Buffer} from 'buffer'
-import imageCompression from 'browser-image-compression';
+ 
+import { SalonSettings, SalonHours, SalonHoliday,dayMap } from '../src/types/salon';
 import { getCollaborateurOfByID } from '../Service/CollaborateurOffDaysService';
 export const convertToBase64 = (imageArray: Uint8Array | null): string | null => {
   if (!imageArray) return null;
@@ -49,6 +50,9 @@ export function mapToDayOffs(databaseObjects: Array<{
     reason: '' // Default empty reason
   }));
 }
+
+ 
+
 export async function convertSalonCollaToStaff(data: SalonCollaData[]): Promise<Staff[]> {
   // Use Promise.all to handle multiple async operations in parallel
   return await Promise.all(data.map(async item => {
@@ -167,4 +171,73 @@ export async function convertSalonCollaToStaff(data: SalonCollaData[]): Promise<
           };
         });
       };
- 
+    export  function formatHour(hour: number): string {
+        return `${hour.toString().padStart(2, '0')}:00`;
+      }
+      export  const transformHolidays = (data: any[]): SalonHoliday[] => {
+        // Sort the data by date
+        const sortedData = [...data].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        const periods: SalonHoliday[] = [];
+        let currentPeriod: {
+          startId: number;
+          startDate: string;
+          endDate: string;
+          reason: string;
+          dates: string[];
+        } | null = null;
+      
+        sortedData.forEach((holiday, index) => {
+          const currentDate = new Date(holiday.date);
+          
+          if (!currentPeriod) {
+            // Start a new period
+            currentPeriod = {
+              startId: holiday.id,
+              startDate: holiday.date,
+              endDate: holiday.date,
+              reason: holiday.reason,
+              dates: [holiday.date]
+            };
+          } else {
+            const previousDate = new Date(currentPeriod.dates[currentPeriod.dates.length - 1]);
+            const dayDifference = (currentDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+            if (dayDifference === 1 ) {
+              // Extend current period
+              currentPeriod.endDate = holiday.date;
+              currentPeriod.dates.push(holiday.date);
+            } else {
+              // Save current period and start a new one
+              periods.push({
+                id: `${currentPeriod.startId}`,
+                startDate: currentPeriod.startDate,
+                endDate: currentPeriod.endDate,
+                reason: currentPeriod.reason
+              });
+      
+              currentPeriod = {
+                startId: holiday.id,
+                startDate: holiday.date,
+                endDate: holiday.date,
+                reason: holiday.reason,
+                dates: [holiday.date]
+              };
+            }
+          }
+      
+          // Handle the last item
+          if (index === sortedData.length - 1 && currentPeriod) {
+            periods.push({
+              id: `${currentPeriod.startId}`,
+              startDate: currentPeriod.startDate,
+              endDate: currentPeriod.endDate,
+              reason: currentPeriod.reason
+            });
+          }
+        });
+      
+        return periods;
+      };

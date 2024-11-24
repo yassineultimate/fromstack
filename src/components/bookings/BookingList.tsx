@@ -22,8 +22,20 @@ const StatusBadge = ({ status }: { status: Booking['status'] }) => {
     </span>
   );
 };
+ 
 
 const BookingList = ({ bookings, onUpdateStatus, onDeleteBooking }: BookingListProps) => {
+    // Function to determine available status options based on current status
+    const getStatusOptions = (currentStatus: Booking['status']) => {
+      if (currentStatus === 'confirmed') {
+        return [
+          { value: 'confirmed', label: 'Confirmed' },
+          { value: 'cancelled', label: 'Cancelled' }
+        ];
+      }
+      return null; // Return null for non-modifiable statuses
+    };
+  
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -92,16 +104,21 @@ const BookingList = ({ bookings, onUpdateStatus, onDeleteBooking }: BookingListP
                 <StatusBadge status={booking.status} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
-                <select
-                  value={booking.status}
-                  onChange={(e) => onUpdateStatus(booking.id, e.target.value as Booking['status'])}
-                  className="mr-2 rounded-md border-gray-300 text-sm focus:ring-primary-500 focus:border-primary-500"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="completed">Completed</option>
-                </select>
+                {getStatusOptions(booking.status) ? (
+                  <select
+                    value={booking.status}
+                    onChange={(e) => onUpdateStatus(booking.id, e.target.value as Booking['status'])}
+                    className="mr-2 rounded-md border-gray-300 text-sm focus:ring-primary-500 focus:border-primary-500"
+                  >
+                    {getStatusOptions(booking.status)?.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="mr-2 text-gray-400">{booking.status}</div>
+                )}
                 <button
                   onClick={() => onDeleteBooking(booking.id)}
                   className="text-red-600 hover:text-red-900"

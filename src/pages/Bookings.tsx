@@ -1,64 +1,160 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Plus, Search, Filter } from 'lucide-react';
 import { Booking } from '../types/booking';
 import BookingList from '../components/bookings/BookingList';
 import AddBookingModal from '../components/bookings/AddBookingModal';
 import BookingFilters from '../components/bookings/BookingFilters';
-
+import { getReservationBySalon,deletereservation,cancelReservation } from '../../Service/ReservationsService';
+import { SendMAil} from '../../Service/SendMailService';
 const BookingsPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedCollaborator, setSelectedCollaborator] = useState('');
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
   
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: '1',
-      clientName: 'Sophie Martin',
-      clientEmail: 'sophie@example.com',
-      clientPhone: '+33 1 23 45 67 89',
-      serviceId: '1',
-      serviceName: 'Haircut & Styling',
-      staffId: '1',
-      staffName: 'Emma Thompson',
-      date: '2024-03-20',
-      time: '14:30',
-      duration: 60,
-      status: 'confirmed',
-      totalPrice: 50,
-      notes: 'Regular client'
-    },
-    {
-      id: '2',
-      clientName: 'Marie Dubois',
-      clientEmail: 'marie@example.com',
-      clientPhone: '+33 1 98 76 54 32',
-      serviceId: '2',
-      serviceName: 'Manicure',
-      staffId: '2',
-      staffName: 'Julie Bernard',
-      date: '2024-03-20',
-      time: '15:00',
-      duration: 45,
-      status: 'pending',
-      totalPrice: 35
-    }
-  ]);
+  const transformBookingData = (data: any[]) => {
+    const now = new Date();
+    
+    return data.map(databooking => {
+      // Déterminer le service (salon service ou package service)
+      const serviceInfo = databooking.SalonService 
+        ? {
+            serviceId: databooking.SalonService.id,
+            serviceName: databooking.SalonService.name,
+            duration: databooking.SalonService.duration
+          }
+        : {
+            serviceId: databooking.packagesService?.id,
+            serviceName: databooking.packagesService?.name,
+            duration: databooking.packagesService.duration
+          };
+  
+      // Extraire l'heure du startTime
+      const time = databooking.startTime.substring(0, 5);
+      
+      // Créer un objet Date pour la réservation
+      const bookingDateTime = new Date(`${databooking.date}T${databooking.startTime}`);
+      
+      // Déterminer le statut
+      let status = databooking.status;
+      if (status.toLowerCase() === 'Confirmed'.toLowerCase() && bookingDateTime < now) {
+        status = 'completed';
+      }
+  
+      return {
+        id: databooking.id.toString(),
+        clientName: databooking.User.name,
+        clientEmail: databooking.User.email,
+        clientPhone: databooking.User.phone,
+        serviceId: serviceInfo.serviceId?.toString(),
+        serviceName: serviceInfo.serviceName,
+        staffId: databooking.Collaborator.id.toString(),
+        staffName: databooking.Collaborator.name,
+        date: databooking.date,
+        time: time,
+        duration: serviceInfo.duration,
+        status: status,
+        totalPrice: parseFloat(databooking.totalPrice),
+        bookingDateTime: bookingDateTime // Ajout pour le tri
+      };
+    })
+    .sort((a, b) => {
+      // Tri par date et heure, du plus récent au plus ancien
+      return new Date(b.bookingDateTime).getTime() - new Date(a.bookingDateTime).getTime();
+    })
+    .map(booking => {
+      // Supprimer le champ bookingDateTime du résultat final
+      const { bookingDateTime, ...bookingWithoutDateTime } = booking;
+      return bookingWithoutDateTime;
+    });
+  };
+  
+  useEffect(() => {
+    const fetchCalloborateurSalonData = async () => {
+      try {
+        const data = await getReservationBySalon(5);
+        const transformedData = transformBookingData(data);
+        setBookings(transformedData);
+        
+     
+          
+   
+      } catch (err) {
+        console.error('Error fetching salon data:', err);
+      }
+    };
+
+    fetchCalloborateurSalonData();
+  }, []);
+
 
   const handleAddBooking = (newBooking: Omit<Booking, 'id'>) => {
-    setBookings(prev => [...prev, { ...newBooking, id: Date.now().toString() }]);
+    const bookingWithId = { 
+      ...newBooking, 
+      id: Date.now().toString(),
+    };
+    setBookings(prev => [bookingWithId, ...prev]);
   };
 
-  const handleUpdateStatus = (id: string, status: Booking['status']) => {
-    setBookings(prev => prev.map(booking => 
-      booking.id === id ? { ...booking, status } : booking
-    ));
+  const handleUpdateStatus = async (id: string, status: Booking['status']) => {
+    try {
+      // Find the booking before updating
+      const bookingToUpdate = bookings.find(b => b.id === id);
+      
+      if (!bookingToUpdate) {
+        throw new Error('Booking not found');
+      }
+
+      // Call the API to cancel the reservation
+      await cancelReservation(parseInt(id), status);
+
+      // If status is being changed to cancelled, send an email
+      if (status === 'cancelled') {
+        const message = `Cher(e) client(e),
+
+Votre réservation du ${bookingToUpdate.date} à ${bookingToUpdate.time} a été annulée.
+
+Service: ${bookingToUpdate.serviceName}
+Prestataire: ${bookingToUpdate.staffName}
+
+Nous vous remercions de votre compréhension.`;
+
+        await SendMAil(
+          bookingToUpdate.clientEmail,
+          "Votre réservation a été annulée",
+          message
+        );
+      }
+
+      // Update the local state
+      setBookings(prev => prev.map(booking => 
+        booking.id === id ? { ...booking, status } : booking
+      ));
+
+      // Show success message (optional)
+      alert('La réservation a été mise à jour avec succès');
+
+      
+    } catch (error) {
+      console.error('Erreur lors de la suppression du membre du personnel:', error);
+    }
+   
   };
 
-  const handleDeleteBooking = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this booking?')) {
-      setBookings(prev => prev.filter(b => b.id !== id));
+  const handleDeleteBooking = async (id: string) => {
+    if (window.confirm('Etes-vous sûr de vouloir supprimer cette réservation ?')) {
+     
+      try {
+        const data = await deletereservation(parseInt(id));
+        setBookings(prev => prev.filter(b => b.id !== id));
+      } catch (error) {
+        console.error('Erreur lors de la suppression du membre du personnel:', error);
+      }
+      
     }
   };
 
@@ -67,11 +163,12 @@ const BookingsPage = () => {
       booking.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       booking.clientEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
       booking.serviceName.toLowerCase().includes(searchQuery.toLowerCase());
-    
+      booking.staffName.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesDate = !selectedDate || booking.date === selectedDate;
     const matchesStatus = !selectedStatus || booking.status === selectedStatus;
-
-    return matchesSearch && matchesDate && matchesStatus;
+    const matchesStaff = !selectedCollaborator || booking.staffId === selectedCollaborator;
+    return matchesSearch && matchesDate && matchesStatus && matchesStaff;
   });
 
   return (
@@ -113,8 +210,10 @@ const BookingsPage = () => {
             <BookingFilters
               selectedDate={selectedDate}
               selectedStatus={selectedStatus}
+              selectedCollaborator={selectedCollaborator} // Ajout de cette prop
               onDateChange={setSelectedDate}
               onStatusChange={setSelectedStatus}
+              onCollaboratorChange={setSelectedCollaborator}
             />
           )}
         </div>

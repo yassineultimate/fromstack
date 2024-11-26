@@ -24,6 +24,8 @@ export interface SalonSettings {
   latitude: number | null;
   longitude: number | null;
   durreRendezvous: number | null;
+  phone: string;
+  address: string;
 }
 
 export const dayMap = {
@@ -36,3 +38,12 @@ export const dayMap = {
   6: 'Samedi'
 } as const;
 
+export const dayMap2 = {
+  'Dimanche':0,
+  'Lundi' :1,
+   'Mardi' :2 ,
+   'Mercredi' :3,
+  'Jeudi':4,
+  'Vendredi' :5,
+  'Samedi':6
+} as const;

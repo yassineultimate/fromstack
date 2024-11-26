@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Clock,CheckCircle2  } from 'lucide-react';
 import { Info, MapPin } from 'lucide-react';
+import { updateSalon } from '../../../Service/SalonService';
 
 interface SalonSettings {
   name: string;
@@ -8,22 +10,26 @@ interface SalonSettings {
   latitude: number | null;
   longitude: number | null;
   durreRendezvous: number | null;
+  phone: string; // New phone field
+  address: string; // New address field
 }
-
 interface SalonInfoProps {
   settings?: SalonSettings; // Make settings optional
-  onUpdate: (info: Pick<SalonSettings, 'name' | 'shortDescription' | 'longDescription' | 'latitude' | 'longitude' | 'durreRendezvous'>) => void;
+  onUpdate: (info: Pick<SalonSettings, 'name' | 'shortDescription' | 'longDescription' | 'latitude' | 'longitude' | 'durreRendezvous' | 'phone' | 'address'>) => void;
 }
 
 const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
   const [isLoading, setIsLoading] = useState(true);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const [formData, setFormData] = useState<SalonSettings>({
     name: '',
     shortDescription: '',
     longDescription: '',
     latitude: null,
     longitude: null,
-    durreRendezvous: 30 // Default appointment duration
+    durreRendezvous: 30, // Default appointment duration
+    phone: '', // Initialize phone field
+    address: '' // Initialize address field
   });
 
   // Effect to update form data when settings prop changes
@@ -35,14 +41,29 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
         longDescription: settings.longDescription || '',
         latitude: settings.latitude || null,
         longitude: settings.longitude || null,
-        durreRendezvous: settings.durreRendezvous || 30
+        durreRendezvous: settings.durreRendezvous || 30,
+        phone: settings.phone || '', // Add phone
+        address: settings.address || '' // Add address
       });
     }
     setIsLoading(false);
   }, [settings]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
+     try{
+      const response = await  updateSalon(5,formData)  
+     
+        onUpdate(formData);
+        setUpdateSuccess(true);
+    
+    } catch (error) {
+      setUpdateSuccess(false);
+      console.error('Error:', error);
+    }
+
+
     onUpdate(formData);
   };
 
@@ -107,7 +128,43 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             required
           />
         </div>
+          {/* New Phone Number Field */}
+          <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Numéro de téléphone
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+            placeholder="Ex: +33 1 23 45 67 89"
+            required
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Numéro de téléphone du salon pour les réservations et contacts
+          </p>
+        </div>
 
+        {/* New Address Field */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Adresse complète
+          </label>
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+            placeholder="Ex: 123 Rue de la Beauté, 75001 Paris"
+            required
+          />
+          <p className="mt-1 text-sm text-gray-500">
+            Adresse complète de votre salon
+          </p>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Brève description
@@ -218,6 +275,12 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
           >
             Enregistrer les modifications
           </button>
+          {updateSuccess && (
+          <div className="mt-4 flex items-center text-green-600 space-x-2">
+            <CheckCircle2 size={24} />
+            <span>Mise à jour réussie !</span>
+          </div>
+        )}
         </div>
       </form>
     </div>

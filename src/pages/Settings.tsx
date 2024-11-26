@@ -5,9 +5,9 @@ import BusinessHours from '../components/settings/BusinessHours';
 import HolidayManager from '../components/settings/HolidayManager';
 import PhotoGallery from '../components/settings/PhotoGallery';
 import SalonInfo from '../components/settings/SalonInfo';
-import { getSalonsAttributeByID } from '../../Service/SalonService';
+import { getSalonsAttributeByID,deleteimage } from '../../Service/SalonService';
 import { formatHour ,transformHolidays} from '../../Service/util';
- 
+import { adddayofsalon,deletedayofsalon } from '../../Service/SalonDayOffservice';
  
 
 const Settings = () => {
@@ -23,7 +23,9 @@ const Settings = () => {
     holidays: [],
     latitude: null,
     longitude: null,
-    durreRendezvous: null
+    durreRendezvous: null,
+    phone: '',
+    address: '',
   });
  
 
@@ -50,7 +52,7 @@ const Settings = () => {
         ].filter((img): img is string => img !== null);
   
         // Transform Calendars to match SalonHours interface
-        const businessHours: SalonHours[] = data.Calendars.map((calendar: any) => ({
+        const businessHours: SalonHours[] = data.CalendarSalons.map((calendar: any) => ({
              
           day: dayMap[calendar.jour as DayNumber],
           open: formatHour(calendar.heure_début) || '',
@@ -77,7 +79,9 @@ const Settings = () => {
           holidays,
           latitude,
           longitude,
-          durreRendezvous: data.DureeRendezVous || null
+          durreRendezvous: data.DureeRendezVous || null,
+          phone:  data.Phone,
+          address: data.adresse
         };
   
         setSettings(transformedSalonData);
@@ -104,11 +108,18 @@ const Settings = () => {
     }));
   };
 
-  const handleDeleteHoliday = (id: string) => {
+  const handleDeleteHoliday =async (id:string,startDate: string,endDate:string) => {
+    try{
+      const response = await  deletedayofsalon(5,startDate,endDate)  ;
+    
     setSettings(prev => ({
       ...prev,
       holidays: prev.holidays.filter(h => h.id !== id)
-    }));
+    })); 
+  } catch (error) {
+      console.error('Error:', error);
+    }
+
   };
 
   const handleAddPhotos = (type: 'photos' | 'portfolioImages', urls: string[]) => {
@@ -118,11 +129,17 @@ const Settings = () => {
     }));
   };
 
-  const handleDeletePhoto = (type: 'photos' | 'portfolioImages', url: string) => {
-    setSettings(prev => ({
+  const handleDeletePhoto  = async (type: 'photos' | 'portfolioImages', url: string, alt: string) => {
+    
+    try{
+      const data = await deleteimage(5,alt);
+      setSettings(prev => ({
       ...prev,
       [type]: prev[type].filter(p => p !== url)
     }));
+  } catch (error) {
+    console.error('Erreur lors de la suppression du membre du personnel:', error);
+  }
   };
 
   const tabs = [

@@ -1,15 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Edit, Trash2, Calendar, Phone, MapPin } from 'lucide-react';
 import { Staff } from '../../types/staff';
 import {  icons, images } from '../../constants';
+import { deletedayof } from '../../../Service/CollaborateurOffDaysService';
 interface StaffCardProps {
   staff: Staff;
   onEdit: (staff: Staff) => void;
   onDelete: (id: string) => void;
   onAddDayOff: (staff: Staff) => void;
 }
+ 
+
 
 const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => {
+
+  const [periods, setPeriods] = useState(staff.daysOff);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleDeleteDayOff = async (id:number, startDate:string, endDate:string) => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Assuming deletedayofsalon is imported and returns a promise
+      await deletedayof(5, startDate, endDate);
+      
+      // Update local state after successful API call
+      setPeriods(prevPeriods => 
+        prevPeriods.filter((_, idx) => idx !== id)
+      );
+    } catch (error) {
+      setError('Failed to delete day off period. Please try again.');
+      console.error('Error deleting day off:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
       <div className="p-4">
@@ -28,7 +55,7 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
         <div className="mt-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">jours de congé</h4>
           <div className="flex flex-wrap gap-2">
-            {staff.daysOff.map((period, index) => (
+             {periods.map((period, index) => (
               <div
                 key={index}
                 className="group relative inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
@@ -40,7 +67,16 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
                       {period.reason}
                     </div>
                   </div>
+                  
                 )}
+
+              <button
+                onClick={() => handleDeleteDayOff(index, period.start, period.end)}
+               disabled={isLoading}
+              className="text-red-600 hover:text-red-700 p-2"
+            >
+              <Trash2 size={20} />
+            </button>
               </div>
             ))}
           </div>

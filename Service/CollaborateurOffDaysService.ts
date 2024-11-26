@@ -32,4 +32,25 @@ export const getCollaborateurOfByID= async (id: Number ) => {
       throw new Error('Failed to create off day. Please try again.');
     }
   };
+
+
+  export const deletedayof = async (CollaboratorId: number, startDate: string,endDate : string) => {
+    try {
+      const response = await axios.delete(`${API_URL}/off-days/period`, {
+        data: {  // Add this data object
+          startDate,
+          endDate,
+          CollaboratorId
+        }
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        throw new Error(error.response.data.message);
+      }
+      console.error('Failed to create off day:', error);
+      throw new Error('Failed to create off day. Please try again.');
+    }
+  };
+  
   

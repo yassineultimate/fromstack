@@ -36,6 +36,7 @@ const StaffPage = () => {
     salonCollaborateurData,
     ['name', 'speciality']
   );
+  
 
   const handleAddStaff = (newStaff: Omit<Staff, 'id' | 'daysOff'>) => {
     const staff: Staff = {
@@ -57,7 +58,7 @@ const StaffPage = () => {
       }
     }
   };
-
+ 
   const handleAddDayOff = (staffId: string, dayOff: { start: string; end: string; reason?: string }) => {
     setSalonCollaborateurData(prev => prev.map(staff => 
       staff.id === staffId 

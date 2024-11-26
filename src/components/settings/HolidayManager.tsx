@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, Trash2 } from 'lucide-react';
 import { SalonHoliday } from '../../types/salon';
+import { adddayofsalon,deletedayofsalon } from '../../../Service/SalonDayOffservice';
 
 interface HolidayManagerProps {
   holidays: SalonHoliday[];
   onAdd: (holiday: Omit<SalonHoliday, 'id'>) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id:string,startDate: string,endDate: string) => void;
 }
 
 const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
@@ -16,11 +17,22 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
     reason: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(newHoliday);
-    setNewHoliday({ startDate: '', endDate: '', reason: '' });
-    setShowAddForm(false);
+    try{
+      const response = await  adddayofsalon(5,newHoliday.reason,newHoliday.startDate,newHoliday.endDate)  
+      if (response.message="Days off period created successfully") {
+      onAdd(newHoliday);
+      setNewHoliday({ startDate: '', endDate: '', reason: '' });
+      setShowAddForm(false);
+    } else {
+      console.error('Failed to add staff');
+    }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+
+   
   };
 
   return (
@@ -110,7 +122,7 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
               <div className="text-sm text-gray-500">{holiday.reason}</div>
             </div>
             <button
-              onClick={() => onDelete(holiday.id)}
+              onClick={() => onDelete(holiday.id,holiday.startDate,holiday.endDate)}
               className="text-red-600 hover:text-red-700 p-2"
             >
               <Trash2 size={20} />

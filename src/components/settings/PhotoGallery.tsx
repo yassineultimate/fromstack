@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Camera, Plus, Trash2, Image } from 'lucide-react';
-import { updateImage } from '../../../Service/SalonService';
+import { updateImage,getSalonsAttributeByID } from '../../../Service/SalonService';
 
 interface PhotoGalleryProps {
   salonPhotos: string[];
   portfolioImages: string[];
   onAddPhotos: (type: 'photos' | 'portfolioImages', urls: string[]) => void;
-  onDeletePhoto: (type: 'photos' | 'portfolioImages', url: string) => void;
+  onDeletePhoto: (type: 'photos' | 'portfolioImages', url: string, alt: string) => void;
 }
 
 const PhotoGallery = ({
@@ -16,23 +16,26 @@ const PhotoGallery = ({
   onAddPhotos,
   onDeletePhoto
 }: PhotoGalleryProps) => {
+  const MAX_SALON_PHOTOS = 4;
+  const MAX_PORTFOLIO_IMAGES = 15;
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<'photos' | 'portfolioImages'>('photos');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   
-  // Track available image slots for each type
-  const [salonPhotoSlots, setSalonPhotoSlots] = useState<number>(4);
-  const [portfolioImageSlots, setPortfolioImageSlots] = useState<number>(15);
+  // Calculate available slots dynamically
+  const [salonPhotoSlots, setSalonPhotoSlots] = useState<number>(MAX_SALON_PHOTOS);
+  const [portfolioImageSlots, setPortfolioImageSlots] = useState<number>(MAX_PORTFOLIO_IMAGES);
 
   // Update available slots when photos change
   useEffect(() => {
-    setSalonPhotoSlots(4 - salonPhotos.length);
+    setSalonPhotoSlots(MAX_SALON_PHOTOS - salonPhotos.length);
   }, [salonPhotos]);
 
   useEffect(() => {
-    setPortfolioImageSlots(15 - portfolioImages.length);
+    setPortfolioImageSlots(MAX_PORTFOLIO_IMAGES - portfolioImages.length);
   }, [portfolioImages]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +51,34 @@ const PhotoGallery = ({
       setSelectedFile(null);
     }
   };
-
+  const findFirstEmptyImageKey = async (
+    salonId: number, 
+    type: 'photos' | 'portfolioImages'
+  ): Promise<string | null> => {
+    try {
+      // Fetch the current salon data to check existing image keys
+      const response = await getSalonsAttributeByID(salonId)
+      const salon = response;
+  
+      // Define the keys to check based on the type
+      const keysToCheck = type === 'photos' 
+        ? ['image1', 'image2', 'image3', 'image4']
+        : Array.from({length: 15}, (_, i) => `imagegal${i + 1}`);
+  
+      // Find the first key that is empty or has a null/undefined value
+      for (const key of keysToCheck) {
+        if (!salon[key]) {
+          return key;
+        }
+      }
+  
+      // If all keys are filled, return null
+      return null;
+    } catch (error) {
+      console.error('Error checking image keys:', error);
+      throw error;
+    }
+  };
   const handleImageUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) return;
@@ -58,13 +88,40 @@ const PhotoGallery = ({
     setIsUploading(true);
 
     try {
-      // Replace with your actual backend endpoint
-     
-      const response = await updateImage(5,selectedFile,selectedType,salonPhotoSlots,portfolioImageSlots)
-    
+      // Determine current available slots based on selected type
+      const availableSlots = selectedType === 'photos' 
+        ? salonPhotoSlots 
+        : portfolioImageSlots;
 
-      // Assuming the backend returns the URL of the uploaded image
-      const uploadedImageUrl = response.data.imageUrl;
+      // Prevent upload if no slots available
+      if (availableSlots <= 0) {
+        throw new Error(`No more slots available for ${selectedType}`);
+      }
+      const imageKey = await findFirstEmptyImageKey(5, selectedType);
+
+      // If no empty key found, throw an error
+      if (!imageKey) {
+        throw new Error(`No available slots for ${selectedType}`);
+      }
+  
+      
+
+      // Assuming updateImage now takes current slot count and dynamically generated image key
+      const response = await updateImage(
+        5, // presumably salon ID or user ID
+        selectedFile, 
+        selectedType, 
+        imageKey, // Pass the dynamically generated image key
+        selectedType === 'photos' ? salonPhotoSlots : portfolioImageSlots
+      );
+
+      // Dynamically get the uploaded image URL based on the response structure
+      const uploadedImageUrl = response.salon[imageKey];
+
+      // Verify the image URL exists before adding
+      if (!uploadedImageUrl) {
+        throw new Error('Failed to retrieve uploaded image URL');
+      }
 
       // Update the parent component's state with the new image URL
       onAddPhotos(selectedType, [uploadedImageUrl]);
@@ -79,12 +136,13 @@ const PhotoGallery = ({
       if (axios.isAxiosError(error)) {
         setUploadError(error.response?.data?.message || 'Upload failed. Please try again.');
       } else {
-        setUploadError('An unexpected error occurred.');
+        setUploadError(error instanceof Error ? error.message : 'An unexpected error occurred.');
       }
     } finally {
       setIsUploading(false);
     }
   };
+
 
   return (
     <div>
@@ -96,10 +154,7 @@ const PhotoGallery = ({
         <button
           onClick={() => setShowAddForm(true)}
           className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
-          disabled={
-            (selectedType === 'photos' && salonPhotoSlots === 0) ||
-            (selectedType === 'portfolioImages' && portfolioImageSlots === 0)
-          }
+          
         >
           <Plus size={20} />
           <span>Add Photo</span>
@@ -123,8 +178,8 @@ const PhotoGallery = ({
               onChange={(e) => setSelectedType(e.target.value as 'photos' | 'portfolioImages')}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
             >
-              <option value="photos">Salon Photos (Slots: {salonPhotoSlots}/4)</option>
-              <option value="portfolioImages">Portfolio Images (Slots: {portfolioImageSlots}/15)</option>
+              <option value="photos">Salon Photos (Slots: {salonPhotoSlots}/{MAX_SALON_PHOTOS})</option>
+              <option value="portfolioImages">Portfolio Images (Slots: {portfolioImageSlots}/{MAX_PORTFOLIO_IMAGES})</option>
             </select>
           </div>
           
@@ -214,21 +269,22 @@ const PhotoGallery = ({
         </form>
       )}
 
-      <div className="space-y-6">
+<div className="space-y-6">
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Salon Photos ({salonPhotos.length}/4)
+            Salon Photos ({salonPhotos.length}/{MAX_SALON_PHOTOS})
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {salonPhotos.map((url) => (
+            {salonPhotos.map((url, index) => (
               <div key={url} className="relative group">
                 <img
                   src={url}
-                  alt="Salon"
+                  alt={`image${index + 1}`}
                   className="w-full h-48 object-cover rounded-lg"
+                
                 />
                 <button
-                  onClick={() => onDeletePhoto('photos', url)}
+                  onClick={() => onDeletePhoto('photos', url,`image${index + 1}`)}
                   className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 size={16} />
@@ -240,18 +296,20 @@ const PhotoGallery = ({
 
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Portfolio Images ({portfolioImages.length}/15)
+            Portfolio Images ({portfolioImages.length}/{MAX_PORTFOLIO_IMAGES})
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-            {portfolioImages.map((url) => (
+            {portfolioImages.map((url, index) => (
               <div key={url} className="relative group">
                 <img
                   src={url}
-                  alt="Portfolio"
+                  alt={`imagegal${index + 1}`}
                   className="w-full h-48 object-cover rounded-lg"
+                
                 />
                 <button
-                  onClick={() => onDeletePhoto('portfolioImages', url)}
+                  onClick={() => onDeletePhoto('portfolioImages', url,`imagegal${index + 1}`)}
+            
                   className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 size={16} />
@@ -264,5 +322,4 @@ const PhotoGallery = ({
     </div>
   );
 };
-
 export default PhotoGallery;

@@ -16,3 +16,29 @@ export const getSalonsAttributeByID= async (id: number) => {
       throw new Error('Failed to log in');
     }
   }
+
+
+  export const updateImage= async (idsalon: number,imageG:any,type:string ,idimageSLot:number,portfolioImageSlots:number) => {
+
+    const data: { 
+        id: number; 
+        [key: string]: any 
+      } = {
+        id: idsalon
+      };
+    
+      // Dynamically create the image key based on the type
+      if (type === 'photos') {
+        data[`image${idimageSLot}`] = imageG;
+      } else {
+        data[`imagegal${portfolioImageSlots}`] = imageG;
+      }
+    
+      try {
+        const response = await axios.put(`${BASE_URL}/salonimage/${idsalon}`,data);
+        return response.data;
+      } catch (error) {
+        console.error('Axios error:', error);
+        throw new Error('Failed to fetch salon info');
+      }
+    };

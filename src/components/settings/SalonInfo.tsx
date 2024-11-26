@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Info, MapPin } from 'lucide-react';
 
 interface SalonSettings {
@@ -7,23 +7,39 @@ interface SalonSettings {
   longDescription: string;
   latitude: number | null;
   longitude: number | null;
-  durreRendezvous: number | null;  // New field for appointment duration
+  durreRendezvous: number | null;
 }
 
 interface SalonInfoProps {
-  settings: SalonSettings;
+  settings?: SalonSettings; // Make settings optional
   onUpdate: (info: Pick<SalonSettings, 'name' | 'shortDescription' | 'longDescription' | 'latitude' | 'longitude' | 'durreRendezvous'>) => void;
 }
 
 const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
-  const [formData, setFormData] = useState({
-    name: settings.name,
-    shortDescription: settings.shortDescription,
-    longDescription: settings.longDescription,
-    latitude: settings.latitude || null,
-    longitude: settings.longitude || null,
-    durreRendezvous: settings.durreRendezvous || 30  // Default to 30 minutes if not set
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState<SalonSettings>({
+    name: '',
+    shortDescription: '',
+    longDescription: '',
+    latitude: null,
+    longitude: null,
+    durreRendezvous: 30 // Default appointment duration
   });
+
+  // Effect to update form data when settings prop changes
+  useEffect(() => {
+    if (settings) {
+      setFormData({
+        name: settings.name || '',
+        shortDescription: settings.shortDescription || '',
+        longDescription: settings.longDescription || '',
+        latitude: settings.latitude || null,
+        longitude: settings.longitude || null,
+        durreRendezvous: settings.durreRendezvous || 30
+      });
+    }
+    setIsLoading(false);
+  }, [settings]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +77,15 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center space-x-2 mb-6">
@@ -69,8 +94,6 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-       
-
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Nom du salon
@@ -118,15 +141,15 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             Description détaillée de votre salon, de vos services et de vos caractéristiques uniques
           </p>
         </div>
-         {/* Duration field - Added at the top */}
-         <div>
+
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Durée standard d'un rendez-vous (minutes)
           </label>
           <input
             type="number"
             name="durreRendezvous"
-            value={formData.durreRendezvous}
+            value={formData.durreRendezvous ?? ''}
             onChange={handleChange}
             min="1"
             max="480"
@@ -137,6 +160,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
             La durée par défaut pour les rendez-vous dans votre salon (entre 1 et 480 minutes)
           </p>
         </div>
+
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <label className="block text-sm font-medium text-gray-700">

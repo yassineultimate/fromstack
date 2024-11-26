@@ -43,7 +43,7 @@ const Sidebar = () => {
     <div className="h-screen w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       <div className="p-6">
         <h1 className="text-2xl font-bold text-primary-700 dark:text-primary-500">
-          {isAdmin ? 'Admin Portal' : 'Salon Admin'}
+          {isAdmin ? 'Admin Portal' : 'Salon Manager'}
         </h1>
       </div>
       

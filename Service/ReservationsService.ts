@@ -73,3 +73,32 @@ export const getReservationBySalon= async (idsalon: number) => {
       throw new Error('Failed to log in');
     }
   }
+
+  export const createReservationPAckage= async (date:string,status:string,CollaboratorId:Number,SalonId:Number,UserId:Number,startTime:string,endTime:string,totalPrice:number,packagesServiceId:number) => {
+    
+    try{
+    const response = await axios.post(`${API_URL}/reservationsPackage`,{
+      date,
+      status,
+      CollaboratorId,
+      
+      SalonId,
+      UserId,
+      startTime,
+      endTime,
+      totalPrice,
+      packagesServiceId
+    },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+     return response.data; // 
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  }

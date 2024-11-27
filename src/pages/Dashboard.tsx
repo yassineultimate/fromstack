@@ -1,18 +1,321 @@
- 
-import DashboardStats from '../components/DashboardStats';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { Users, Calendar, DollarSign, TrendingUp, ShoppingBag, Star } from 'lucide-react';
+import StatsCard from '../components/stats/StatsCard';
+import RevenueChart from '../components/stats/RevenueChart';
+import AppointmentsList from '../components/stats/AppointmentsList';
+import PopularServices from '../components/stats/PopularServices';
+import PopularPackages from '../components/stats/PopularPackage';
+import StaffPerformance from '../components/stats/StaffPerformance';
+import {
+  getcustomergrowth,
+  getappointmentsmetrics,
+  getweeklyrevenue,
+  getservicebookedmetrics,
+  getpackagesbookedmetrics,
+  getmonthlygrowth,
+  getservicebreakdown,
+  getupcomingappointments,
+  getpackagesbreakdown,
+  getstaffperformance
+} from './../../Service/StatsService';
 
+
+interface Appointment {
+  id: string;
+  customerName: string;
+  service: string;
+  time: string;
+  image: string;
+}
 const Dashboard = () => {
-  const revenueData = [
-    { name: 'Mon', revenue: 2400 },
-    { name: 'Tue', revenue: 1398 },
-    { name: 'Wed', revenue: 9800 },
-    { name: 'Thu', revenue: 3908 },
-    { name: 'Fri', revenue: 4800 },
-    { name: 'Sat', revenue: 3800 },
-    { name: 'Sun', revenue: 4300 },
-  ];
+  const [stats, setStats] = useState([
+    {
+      icon: Users,
+      label: 'Total Customers',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    },
+    {
+      icon: Calendar,
+      label: 'Appointments Today',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    },
+    {
+      icon: DollarSign,
+      label: 'Revenue Today',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    },
+    {
+      icon: ShoppingBag,
+      label: 'Services Booked',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    },
+    {
+      icon: Star,
+      label: 'package Bookedg',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    },
+    {
+      icon: TrendingUp,
+      label: 'Monthly Growth',
+      value: '...',
+      trend: '...',
+      trendColor: 'gray'
+    }
+  ]);
 
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [
+          customerData,
+          appointmentsData,
+           
+          servicesData,
+          packageData,
+          monthlyGrowthData
+        ] = await Promise.all([
+          getcustomergrowth(5),
+          getappointmentsmetrics(5),
+         
+          getservicebookedmetrics(5),
+          getpackagesbookedmetrics(5),
+      
+          getmonthlygrowth(5)
+        ]);
+
+        setStats(prevStats => {
+          const newStats = [...prevStats];
+          
+          // Update customers stat
+          newStats[0] = {
+            ...newStats[0],
+            value: customerData.currentMonthCustomers.toLocaleString(),
+            trend: `${customerData.growthPercentage >= 0 ? '+' : ''}${customerData.growthPercentage}%`,
+            trendColor: customerData.growthPercentage >= 0 ? 'green' : 'red'
+          };
+
+          // Update appointments stat
+          newStats[1] = {
+            ...newStats[1],
+            value: appointmentsData.todayAppointments.toString(),
+            trend: `${appointmentsData.growthPercentage >= 0 ? '+' : ''}${appointmentsData.growthPercentage}%`,
+            trendColor: appointmentsData.growthPercentage >= 0 ? 'green' : 'red'
+          };
+
+          // Update revenue stat
+          newStats[2] = {
+            ...newStats[2],
+            value: `${monthlyGrowthData.monthlyGrowth.revenue.current.toLocaleString()}`,
+            trend: `${monthlyGrowthData.monthlyGrowth.revenue.growth >= 0 ? '+' : ''}${monthlyGrowthData.monthlyGrowth.revenue.growth}%`,
+            trendColor: monthlyGrowthData.monthlyGrowth.revenue.growth >= 0 ? 'green' : 'red'
+          };
+
+          // Update services stat
+          newStats[3] = {
+            ...newStats[3],
+            value: servicesData.currentMonthServiceBooked.toString(),
+            trend: `${servicesData.growthPercentage >= 0 ? '+' : ''}${servicesData.growthPercentage}%`,
+            trendColor: servicesData.growthPercentage >= 0 ? 'green' : 'red'
+          };
+
+          // Update rating stat (assuming it comes from one of the metrics)
+          // You might need to add a new API endpoint for this
+          newStats[4] = {
+            ...newStats[4],
+            value: packageData.currentMonthPackagesBooked.toString(),
+            trend: `${packageData.growthPercentage >= 0 ? '+' : ''}${packageData.growthPercentage}%`,
+            trendColor: packageData.growthPercentage >= 0 ? 'green' : 'red'
+          };
+
+          // Update monthly growth stat
+          newStats[5] = {
+            ...newStats[5],
+            value: `${monthlyGrowthData.monthlyGrowth.reservations.current}%`,
+            trend: `${monthlyGrowthData.monthlyGrowth.reservations.growth >= 0 ? '+' : ''}${monthlyGrowthData.monthlyGrowth.reservations.growth}%`,
+            trendColor: monthlyGrowthData.monthlyGrowth.reservations.growth>= 0 ? 'green' : 'red'
+          };
+
+          return newStats;
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []); 
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState([]);
+  useEffect(() => {
+    const fetchRevenueData = async () => {
+      try {
+        setIsLoading(true);
+        
+        const data = await getweeklyrevenue(5);
+        
+      
+        
+        setRevenueData(data);
+      } catch (error) {
+        console.error('Error fetching revenue data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchRevenueData();
+  }, []); 
+
+ 
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const data = await getupcomingappointments(5);
+        setAppointments(data);
+      } catch (error) {
+        // Handle error appropriately
+        console.error(error);
+      }
+    };
+  
+    loadInitialData();
+  }, []);
+   
+ 
+
+  const [popularServices, setPopularServices] = useState<Array<{
+    name: string;
+    bookings: number;
+    revenue: number;
+  }>>([]);
+  
+  useEffect(() => {
+    const fetchServiceMetrics = async () => {
+      try {
+        // Replace with actual salon ID
+        const response = await getservicebreakdown(5);
+        
+        // Transform the backend response to match the existing data structure
+        
+        const formattedServices2 = response.mostPopularPackages.map((item:any) => {
+          // Check if the required properties exist
+          if (!item || 
+              !item.SalonService || 
+              !item.SalonService.name || 
+              item.packageCount === undefined || 
+              !item.totalRevenue) {
+              console.warn('Invalid data entry:', item);
+              return null;
+          }
+      
+          try {
+              return {
+                  name: 'Service: ' + item.SalonService.name, 
+                  bookings: item.packageCount, 
+                  revenue: parseFloat(item.totalRevenue.replace(/,/g, ''))
+              };
+          } catch (error) {
+              console.error('Error processing data entry:', error);
+              return null;
+          }
+      }).filter((entry:any) => entry !== null); //
+        setPopularServices(formattedServices2);
+      } catch (error) {
+        console.error('Failed to fetch service metrics:', error);
+        // Optionally set an error state or show a notification
+      }
+    };
+  
+    fetchServiceMetrics();
+  }, []);
+
+  
+  const [PopularPackage, setPopularPackage] = useState<Array<{
+    name: string;
+    bookings: number;
+    revenue: number;
+  }>>([]);
+  
+  useEffect(() => {
+    const fetchpackageMetrics = async () => {
+      try {
+        // Replace with actual salon ID
+        const response = await getpackagesbreakdown(5);
+        
+        // Transform the backend response to match the existing data structure
+       
+        const formattedServices2 = response.mostPopularPackages.map((item:any) => {
+          // Check if the required properties exist
+          if (!item || 
+              !item.packagesService || 
+              !item.packagesService.name || 
+              item.packageCount === undefined || 
+              !item.totalRevenue) {
+              console.warn('Invalid data entry:', item);
+              return null;
+          }
+      
+          try {
+              return {
+                  name: 'Service: ' + item.packagesService.name, 
+                  bookings: item.packageCount, 
+                  revenue: parseFloat(item.totalRevenue.replace(/,/g, ''))
+              };
+          } catch (error) {
+              console.error('Error processing data entry:', error);
+              return null;
+          }
+      }).filter((entry:any) => entry !== null); //
+      setPopularPackage(formattedServices2);
+      } catch (error) {
+        console.error('Failed to fetch service metrics:', error);
+        // Optionally set an error state or show a notification
+      }
+    };
+  
+    fetchpackageMetrics();
+  }, []);
+
+
+  const [staffStats, setStaffStats]  = useState<Array<{
+    id: string;
+    name: string;
+    image: string;
+    appointments: number;
+    revenue: number;
+  }>>([]);
+  
+
+  useEffect(() => {
+    const fetchStaffPerformance = async () => {
+      try {
+        // Assume you have the salon ID from context or props
+         // Replace with actual salon ID
+        const performanceData = await getstaffperformance(5);
+        setStaffStats(performanceData);
+      ;
+      } catch (err) {
+        console.error('Failed to fetch service metrics:', err);
+      }
+    };
+
+    fetchStaffPerformance();
+  }, []);
+
+  
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -22,70 +325,22 @@ const Dashboard = () => {
         </button>
       </div>
 
-      <DashboardStats />
-
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">Weekly Revenue</h2>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="revenue" fill="#6B46C1" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {stats.map((stat, index) => (
+          <StatsCard key={index} {...stat} />
+        ))}
       </div>
+
+      <RevenueChart data={revenueData} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Recent Appointments</h2>
-          <div className="space-y-4">
-            {[1, 2, 3].map((_, index) => (
-              <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <img
-                    src={`https://images.unsplash.com/photo-${1490000000000 + index}?auto=format&fit=crop&w=40&h=40&q=80`}
-                    alt="Customer"
-                    className="w-10 h-10 rounded-full"
-                  />
-                  <div>
-                    <p className="font-medium">Sarah Johnson</p>
-                    <p className="text-sm text-gray-500">Haircut & Style</p>
-                  </div>
-                </div>
-                <span className="text-sm text-purple-600 font-medium">2:30 PM</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Popular Services</h2>
-          <div className="space-y-4">
-            {[
-              { name: 'Haircut & Styling', bookings: 48 },
-              { name: 'Hair Coloring', bookings: 35 },
-              { name: 'Manicure & Pedicure', bookings: 29 },
-            ].map((service, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{service.name}</p>
-                  <p className="text-sm text-gray-500">{service.bookings} bookings</p>
-                </div>
-                <div className="w-24 bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-purple-600 h-2 rounded-full"
-                    style={{ width: `${(service.bookings / 50) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <AppointmentsList appointments={appointments} />
+        <PopularServices services={popularServices} />
+        <PopularPackages packages={PopularPackage} />
+        <StaffPerformance staffStats={staffStats} />
       </div>
+
+    
     </div>
   );
 };

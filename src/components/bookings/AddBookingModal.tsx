@@ -4,7 +4,8 @@ import { getServiceofSalonByid } from '../../../Service/ServiceService';
 import { getPackageofSalonByid } from '../../../Service/PackageService';
 import { getallCollaborateurBYsalon } from '../../../Service/CollaboratorService';
 import { getUserByMail, getUserByPhone,resgisterAnonyme } from '../../../Service/USerService';
-import { createReservation } from '../../../Service/ReservationsService';
+import { createReservation,createReservationPAckage } from '../../../Service/ReservationsService';
+import { addtimeSlot } from '../../../Service/TimeSlotService';
 import { Service } from '../../types/service';
 import { SalonPackage } from '../../types/package';
 import { Staff, SalonCollaData } from '../../types/staff';
@@ -181,6 +182,7 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
       const endTime = calculateEndTime(formData.time, Number(formData.duration));
   
       // Create the reservation
+      if (isService) {
       const reservationResponse = await createReservation(
         formData.date,           // date
         formData.status,         // status
@@ -191,8 +193,27 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
         endTime,                // endTime
         Number(formData.totalPrice), // totalPrice
         Number(formData.serviceId)   // SalonServiceId
+      );}else{
+        const reservationResponse2 = await createReservationPAckage(
+          formData.date,           // date
+          formData.status,         // status
+          Number(formData.staffId),// CollaboratorId
+          5,                       // SalonId (hardcoded as 5 from your earlier code)
+          userId,                  // UserId
+          formData.time,          // startTime
+          endTime,                // endTime
+          Number(formData.totalPrice), // totalPrice
+          Number(formData.serviceId)   // SalonServiceId
+        )
+    }
+      const Timeslot = await addtimeSlot(
+        formData.date,           // date
+        5,         // status
+        Number(formData.staffId),// CollaboratorId
+        formData.time,                    // SalonId (hardcoded as 5 from your earlier code)
+        formData.time,            // UserId
+        
       );
-  
       // If successful, call onAdd and close modal
       onAdd({
         ...formData,

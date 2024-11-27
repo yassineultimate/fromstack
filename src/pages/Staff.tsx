@@ -8,7 +8,7 @@ import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
 import { getallCollaborateurBYsalon,deleteStaff } from '../../Service/CollaboratorService';
 import { convertSalonCollaToStaff } from '../../Service/util';
-
+const SalonId = localStorage.getItem('SalonId');
 const StaffPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDayOffModal, setShowDayOffModal] = useState(false);
@@ -18,7 +18,7 @@ const StaffPage = () => {
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data: SalonCollaData[] = await getallCollaborateurBYsalon(5); 
+        const data: SalonCollaData[] = await getallCollaborateurBYsalon(parseInt(SalonId!, 0)); 
         
         const saloncoll= await convertSalonCollaToStaff(data);
           

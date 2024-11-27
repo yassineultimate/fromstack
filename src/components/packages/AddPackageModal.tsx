@@ -17,7 +17,7 @@ const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
     description: '',
    
   });
-
+  const SalonId = localStorage.getItem('SalonId');
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -28,7 +28,7 @@ const AddPackageModal = ({ onClose, onAdd }: AddPackageModalProps) => {
         ...formData,
         image: selectedImage || formData.image
       };
-        const response = await  createPackagebySalon(newpackage,5)  
+        const response = await  createPackagebySalon(newpackage,parseInt(SalonId!, 0))  
         
         if (response.package.id>0) {
      

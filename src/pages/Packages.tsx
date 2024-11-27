@@ -10,10 +10,12 @@ const PackagesPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [packages, setPackages] =  useState<SalonPackage[]>([]);
+  
+  const SalonId = localStorage.getItem('SalonId');
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data: SalonPackage[] = await getPackageofSalonByid(5); 
+        const data: SalonPackage[] = await getPackageofSalonByid(parseInt(SalonId!, 0)); 
         
      
           
@@ -35,7 +37,7 @@ const PackagesPage = () => {
     if (window.confirm('Are you sure you want to delete this package?')) {
 
       try {
-        const data = await deletePackage(5,parseInt(id));
+        const data = await deletePackage(parseInt(SalonId!, 0),parseInt(id));
         setPackages(prev => prev.filter(p => p.id !== id));
       } catch (error) {
         console.error('Erreur lors de la suppression du membre du personnel:', error);

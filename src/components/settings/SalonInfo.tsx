@@ -31,7 +31,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
     phone: '', // Initialize phone field
     address: '' // Initialize address field
   });
-
+  const SalonId = localStorage.getItem('SalonId');
   // Effect to update form data when settings prop changes
   useEffect(() => {
     if (settings) {
@@ -53,7 +53,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
   const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault();
      try{
-      const response = await  updateSalon(5,formData)  
+      const response = await  updateSalon(parseInt(SalonId!, 0),formData)  
      
         onUpdate(formData);
         setUpdateSuccess(true);

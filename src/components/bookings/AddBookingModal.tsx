@@ -34,7 +34,7 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
     notes: '',
     totalPrice: ''
   });
-
+  const SalonId = localStorage.getItem('SalonId');
   const [services, setServices] = useState<Service[]>([]);
   const [packages, setPackages] = useState<SalonPackage[]>([]);
   const [salonCollaborateurData, setSalonCollaborateurData] = useState<Staff[]>([]);
@@ -45,9 +45,9 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
     const fetchData = async () => {
       try {
         const [servicesData, packagesData, staffData] = await Promise.all([
-          getServiceofSalonByid(5),
-          getPackageofSalonByid(5),
-          getallCollaborateurBYsalon(5)
+          getServiceofSalonByid( parseInt(SalonId!, 0)),
+          getPackageofSalonByid( parseInt(SalonId!, 0)),
+          getallCollaborateurBYsalon( parseInt(SalonId!, 0)),
         ]);
         
         setServices(servicesData);
@@ -187,7 +187,7 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
         formData.date,           // date
         formData.status,         // status
         Number(formData.staffId),// CollaboratorId
-        5,                       // SalonId (hardcoded as 5 from your earlier code)
+        parseInt(SalonId!, 0) ,                       // SalonId (hardcoded as 5 from your earlier code)
         userId,                  // UserId
         formData.time,          // startTime
         endTime,                // endTime
@@ -198,7 +198,7 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
           formData.date,           // date
           formData.status,         // status
           Number(formData.staffId),// CollaboratorId
-          5,                       // SalonId (hardcoded as 5 from your earlier code)
+          parseInt(SalonId!, 0),                       // SalonId (hardcoded as 5 from your earlier code)
           userId,                  // UserId
           formData.time,          // startTime
           endTime,                // endTime

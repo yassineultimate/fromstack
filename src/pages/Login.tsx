@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scissors, Lock, Mail } from 'lucide-react';
+import axios from 'axios';
+import {loginManager} from './../../Service/MAnegerService';
+ 
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+ 
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login - replace with actual authentication
-    localStorage.setItem('token', 'user-token');
-    localStorage.setItem('role', 'user');
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await loginManager(email, password);
+      localStorage.setItem('SalonId', data.SalonId);
+      localStorage.setItem('name', data.name);
+      localStorage.setItem('token', 'user-token');
+      localStorage.setItem('role', 'user');
+      navigate('/dashboard');
+    } catch (error) {
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +42,12 @@ const Login = () => {
           <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
           <p className="text-gray-500 mt-2">Sign in to manage your salon</p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -43,6 +66,7 @@ const Login = () => {
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter your email"
                 required
+                disabled={loading}
               />
               <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
@@ -64,6 +88,7 @@ const Login = () => {
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter your password"
                 required
+                disabled={loading}
               />
               <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
@@ -75,6 +100,7 @@ const Login = () => {
                 id="remember-me"
                 type="checkbox"
                 className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                disabled={loading}
               />
               <label
                 htmlFor="remember-me"
@@ -86,6 +112,7 @@ const Login = () => {
             <button
               type="button"
               className="text-sm font-medium text-purple-600 hover:text-purple-500"
+              disabled={loading}
             >
               Forgot password?
             </button>
@@ -93,16 +120,20 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+            className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors disabled:bg-purple-300"
+            disabled={loading}
           >
-            Sign In
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <button className="font-medium text-purple-600 hover:text-purple-500">
+            <button 
+              className="font-medium text-purple-600 hover:text-purple-500"
+              disabled={loading}
+            >
               Contact Support
             </button>
           </p>

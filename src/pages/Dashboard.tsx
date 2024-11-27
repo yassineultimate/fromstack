@@ -72,7 +72,7 @@ const Dashboard = () => {
       trendColor: 'gray'
     }
   ]);
-
+  const SalonId = localStorage.getItem('SalonId');
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -84,13 +84,13 @@ const Dashboard = () => {
           packageData,
           monthlyGrowthData
         ] = await Promise.all([
-          getcustomergrowth(5),
-          getappointmentsmetrics(5),
+          getcustomergrowth(parseInt(SalonId!, 0)),
+          getappointmentsmetrics(parseInt(SalonId!, 0)),
          
-          getservicebookedmetrics(5),
-          getpackagesbookedmetrics(5),
+          getservicebookedmetrics(parseInt(SalonId!, 0)),
+          getpackagesbookedmetrics(parseInt(SalonId!, 0)),
       
-          getmonthlygrowth(5)
+          getmonthlygrowth(parseInt(SalonId!, 0))
         ]);
 
         setStats(prevStats => {
@@ -162,7 +162,7 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         
-        const data = await getweeklyrevenue(5);
+        const data = await getweeklyrevenue(parseInt(SalonId!, 0));
         
       
         
@@ -183,7 +183,7 @@ const Dashboard = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const data = await getupcomingappointments(5);
+        const data = await getupcomingappointments(parseInt(SalonId!, 0));
         setAppointments(data);
       } catch (error) {
         // Handle error appropriately
@@ -206,7 +206,7 @@ const Dashboard = () => {
     const fetchServiceMetrics = async () => {
       try {
         // Replace with actual salon ID
-        const response = await getservicebreakdown(5);
+        const response = await getservicebreakdown(parseInt(SalonId!, 0));
         
         // Transform the backend response to match the existing data structure
         
@@ -253,7 +253,7 @@ const Dashboard = () => {
     const fetchpackageMetrics = async () => {
       try {
         // Replace with actual salon ID
-        const response = await getpackagesbreakdown(5);
+        const response = await getpackagesbreakdown(parseInt(SalonId!, 0));
         
         // Transform the backend response to match the existing data structure
        
@@ -304,7 +304,7 @@ const Dashboard = () => {
       try {
         // Assume you have the salon ID from context or props
          // Replace with actual salon ID
-        const performanceData = await getstaffperformance(5);
+        const performanceData = await getstaffperformance(parseInt(SalonId!, 0));
         setStaffStats(performanceData);
       ;
       } catch (err) {

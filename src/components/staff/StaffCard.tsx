@@ -17,14 +17,14 @@ const StaffCard = ({ staff, onEdit, onDelete, onAddDayOff }: StaffCardProps) => 
   const [periods, setPeriods] = useState(staff.daysOff);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const SalonId = localStorage.getItem('SalonId');
   const handleDeleteDayOff = async (id:number, startDate:string, endDate:string) => {
     setIsLoading(true);
     setError('');
 
     try {
       // Assuming deletedayofsalon is imported and returns a promise
-      await deletedayof(5, startDate, endDate);
+      await deletedayof(parseInt(SalonId!, 0), startDate, endDate);
       
       // Update local state after successful API call
       setPeriods(prevPeriods => 

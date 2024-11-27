@@ -1,8 +1,10 @@
 import React from 'react';
 import { Bell, Search } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
-
+ 
 const Header = () => {
+  const name = localStorage.getItem('name');
+  const user1 = new URL('../assets/icons/user3.png', import.meta.url).href;
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6">
       <div className="flex items-center flex-1">
@@ -24,12 +26,12 @@ const Header = () => {
         </button>
         <div className="flex items-center space-x-3">
           <img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=40&h=40&q=80"
+            src={user1}
             alt="Profile"
             className="w-8 h-8 rounded-full"
           />
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Sarah Wilson</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{name}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">Manager</p>
           </div>
         </div>

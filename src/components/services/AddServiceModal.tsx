@@ -19,7 +19,7 @@ const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
   
   });
 
-
+  const SalonId = localStorage.getItem('SalonId');
  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ const AddServiceModal = ({ onClose, onAdd }: AddServiceModalProps) => {
       ...formData,
       image: selectedImage || formData.image
     };
-      const response = await  createservicebySalon(newservice,5)  
+      const response = await  createservicebySalon(newservice,parseInt(SalonId!, 0))  
       
       if (response.service.id>0) {
    

@@ -11,11 +11,11 @@ const ServicesPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
   const [services, setServices] =  useState<Service[]>([]);
-
+  const SalonId = localStorage.getItem('SalonId');
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data: Service[] = await getServiceofSalonByid(5); 
+        const data: Service[] = await getServiceofSalonByid(parseInt(SalonId!, 0)); 
         
      
           
@@ -36,7 +36,7 @@ const ServicesPage = () => {
   const handleDeleteService  = async (id: string) => {
     if (window.confirm('Etes-vous sûr de vouloir supprimer ce service?')) {
       try {
-        const data = await deleteService(5,parseInt(id));
+        const data = await deleteService(parseInt(SalonId!, 0),parseInt(id));
         setServices(prev => prev.filter(s => s.id !== id));
       } catch (error) {
         console.error('Erreur lors de la suppression du membre du personnel:', error);

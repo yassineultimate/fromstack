@@ -23,13 +23,13 @@ const BusinessHours = ({ hours, onUpdate }: BusinessHoursProps) => {
   const delay = (ms:any) => new Promise((resolve) => setTimeout(resolve, ms));
   const saveBusinessHours = async () => {
     setIsLoading(true);
-  
+    const SalonId = localStorage.getItem('SalonId');
     try {
       for (const hour of hours) {
         const dayNumber = dayMap2[hour.day]; // Convert day name to number
   
         const payload = {
-          SalonId: 5,
+          SalonId: parseInt(SalonId!, 0),
           jour: dayNumber,
           isClosed: hour.isClosed,
           heure_début: hour.isClosed ? 0 : parseInt(hour.open.split(':')[0]),

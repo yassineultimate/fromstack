@@ -19,7 +19,7 @@ const AddStaffModal = ({ onClose, onAdd }: AddStaffModalProps) => {
   
   });
    
-  
+  const SalonId = localStorage.getItem('SalonId');
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -33,7 +33,7 @@ const AddStaffModal = ({ onClose, onAdd }: AddStaffModalProps) => {
     };
 
     try {
-      const response = await  addstaff2(5,newStaff)  
+      const response = await  addstaff2(parseInt(SalonId!, 0),newStaff)  
       
       if (response.id>0) {
    

@@ -25,11 +25,11 @@ const BookingFilters = ({
   onCollaboratorChange
 }: BookingFiltersProps) => {
   const [salonCollaborateurData, setSalonCollaborateurData] = useState<SalonColla[]>([]);
-  
+  const SalonId = localStorage.getItem('SalonId');
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data: SalonColla[] = await getallCollaborateurBYsalon(5);
+        const data: SalonColla[] = await getallCollaborateurBYsalon(parseInt(SalonId!, 0));
         setSalonCollaborateurData(data);
       } catch (err) {
         console.error('Error fetching salon data:', err);

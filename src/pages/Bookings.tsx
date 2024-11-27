@@ -15,7 +15,7 @@ const BookingsPage = () => {
   const [selectedCollaborator, setSelectedCollaborator] = useState('');
 
   const [bookings, setBookings] = useState<Booking[]>([]);
-  
+  const SalonId = localStorage.getItem('SalonId');
   const transformBookingData = (data: any[]) => {
     const now = new Date();
     
@@ -76,7 +76,7 @@ const BookingsPage = () => {
   useEffect(() => {
     const fetchCalloborateurSalonData = async () => {
       try {
-        const data = await getReservationBySalon(5);
+        const data = await getReservationBySalon(parseInt(SalonId!, 0));
         const transformedData = transformBookingData(data);
         setBookings(transformedData);
         

@@ -28,11 +28,11 @@ const Settings = () => {
     address: '',
   });
  
-
+  const SalonId = localStorage.getItem('SalonId');
   useEffect(() => {
     const fetchSalonData = async () => {
       try {
-        const data = await getSalonsAttributeByID(5);
+        const data = await getSalonsAttributeByID(parseInt(SalonId!, 0));
         type DayNumber = keyof typeof dayMap;
          
         // Transform photos array - remove null values
@@ -110,7 +110,7 @@ const Settings = () => {
 
   const handleDeleteHoliday =async (id:string,startDate: string,endDate:string) => {
     try{
-      const response = await  deletedayofsalon(5,startDate,endDate)  ;
+      const response = await  deletedayofsalon(parseInt(SalonId!, 0),startDate,endDate)  ;
     
     setSettings(prev => ({
       ...prev,
@@ -132,7 +132,7 @@ const Settings = () => {
   const handleDeletePhoto  = async (type: 'photos' | 'portfolioImages', url: string, alt: string) => {
     
     try{
-      const data = await deleteimage(5,alt);
+      const data = await deleteimage(parseInt(SalonId!, 0),alt);
       setSettings(prev => ({
       ...prev,
       [type]: prev[type].filter(p => p !== url)

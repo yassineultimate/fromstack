@@ -24,7 +24,7 @@ const PhotoGallery = ({
   const [selectedType, setSelectedType] = useState<'photos' | 'portfolioImages'>('photos');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  
+  const SalonId = localStorage.getItem('SalonId');
   // Calculate available slots dynamically
   const [salonPhotoSlots, setSalonPhotoSlots] = useState<number>(MAX_SALON_PHOTOS);
   const [portfolioImageSlots, setPortfolioImageSlots] = useState<number>(MAX_PORTFOLIO_IMAGES);
@@ -97,7 +97,7 @@ const PhotoGallery = ({
       if (availableSlots <= 0) {
         throw new Error(`No more slots available for ${selectedType}`);
       }
-      const imageKey = await findFirstEmptyImageKey(5, selectedType);
+      const imageKey = await findFirstEmptyImageKey(parseInt(SalonId!, 0), selectedType);
 
       // If no empty key found, throw an error
       if (!imageKey) {
@@ -108,7 +108,7 @@ const PhotoGallery = ({
 
       // Assuming updateImage now takes current slot count and dynamically generated image key
       const response = await updateImage(
-        5, // presumably salon ID or user ID
+        parseInt(SalonId!, 0), // presumably salon ID or user ID
         selectedFile, 
         selectedType, 
         imageKey, // Pass the dynamically generated image key

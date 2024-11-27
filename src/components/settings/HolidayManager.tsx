@@ -8,7 +8,7 @@ interface HolidayManagerProps {
   onAdd: (holiday: Omit<SalonHoliday, 'id'>) => void;
   onDelete: (id:string,startDate: string,endDate: string) => void;
 }
-
+const SalonId = localStorage.getItem('SalonId');
 const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newHoliday, setNewHoliday] = useState({
@@ -20,7 +20,7 @@ const HolidayManager = ({ holidays, onAdd, onDelete }: HolidayManagerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try{
-      const response = await  adddayofsalon(5,newHoliday.reason,newHoliday.startDate,newHoliday.endDate)  
+      const response = await  adddayofsalon(parseInt(SalonId!, 0),newHoliday.reason,newHoliday.startDate,newHoliday.endDate)  
       if (response.message="Days off period created successfully") {
       onAdd(newHoliday);
       setNewHoliday({ startDate: '', endDate: '', reason: '' });

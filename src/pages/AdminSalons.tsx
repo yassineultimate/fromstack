@@ -1,16 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Salon } from '../types/salon';
+import AddSalonModal from '../components/admin/AddSalonModal';
 import EditSalonModal from '../components/admin/EditSalonModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
-
-interface Salon {
-  id: string;
-  name: string;
-  address: string;
-  manager: string;
-  status: 'active' | 'inactive';
-}
 
 const AdminSalons = () => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -22,6 +16,8 @@ const AdminSalons = () => {
       name: 'Elegance Beauty Salon',
       address: '123 Main St, Paris',
       manager: 'Sophie Martin',
+      email: 'sophie@elegance.com',
+      phone: '+33 1 23 45 67 89',
       status: 'active',
     },
     {
@@ -29,71 +25,54 @@ const AdminSalons = () => {
       name: 'Modern Cuts',
       address: '456 Avenue des Champs-Élysées',
       manager: 'Jean Dupont',
+      email: 'jean@moderncuts.com',
+      phone: '+33 1 98 76 54 32',
       status: 'active',
     },
   ]);
 
   const { query, setQuery, filteredItems: filteredSalons } = useSearch(
     salons,
-    ['name', 'address', 'manager']
+    ['name', 'address', 'manager', 'email', 'phone']
   );
 
-  // ... rest of your existing functions ...
-  const AddSalonModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Add New Salon</h3>
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salon Name</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              placeholder="Enter salon name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              placeholder="Enter address"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Manager Email</label>
-            <input
-              type="email"
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              placeholder="Enter manager email"
-            />
-          </div>
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowAddModal(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-            >
-              Add Salon
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+  const handleAddSalon = (salon: Omit<Salon, 'id'>) => {
+    const newSalon: Salon = {
+      ...salon,
+      id: Date.now().toString()
+    };
+    setSalons(prev => [...prev, newSalon]);
+  };
+
+  const handleEditSalon = (updatedSalon: Salon) => {
+    setSalons(prev => prev.map(salon =>
+      salon.id === updatedSalon.id ? updatedSalon : salon
+    ));
+    setShowEditModal(false);
+    setSelectedSalon(null);
+  };
+
+  const handleDeleteSalon = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this salon?')) {
+      setSalons(prev => prev.filter(salon => salon.id !== id));
+    }
+  };
+
+  const handleToggleStatus = (id: string) => {
+    setSalons(prev => prev.map(salon =>
+      salon.id === id
+        ? { ...salon, status: salon.status === 'active' ? 'inactive' : 'active' }
+        : salon
+    ));
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Manage Salons</h1>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center space-x-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          className="flex items-center space-x-2 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
         >
           <Plus size={20} />
           <span>Add Salon</span>
@@ -117,7 +96,7 @@ const AdminSalons = () => {
                   Salon
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Address
+                  Contact
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Manager
@@ -131,32 +110,53 @@ const AdminSalons = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {salons.map((salon) => (
+              {filteredSalons.map((salon) => (
                 <tr key={salon.id}>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{salon.name}</div>
-                  </td>
-                  <td className="px-6 py-4">
                     <div className="text-sm text-gray-500">{salon.address}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-500">{salon.manager}</div>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{salon.email}</div>
+                    <div className="text-sm text-gray-500">{salon.phone}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      salon.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {salon.status}
-                    </span>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{salon.manager}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => handleToggleStatus(salon.id)}
+                      className={`inline-flex items-center ${
+                        salon.status === 'active'
+                          ? 'text-green-600'
+                          : 'text-gray-400'
+                      }`}
+                    >
+                      {salon.status === 'active' ? (
+                        <ToggleRight size={20} />
+                      ) : (
+                        <ToggleLeft size={20} />
+                      )}
+                      <span className="ml-2 text-sm">
+                        {salon.status === 'active' ? 'Active' : 'Inactive'}
+                      </span>
+                    </button>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex space-x-3">
-                      <button className="text-indigo-600 hover:text-indigo-900">
+                      <button
+                        onClick={() => {
+                          setSelectedSalon(salon);
+                          setShowEditModal(true);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
                         <Edit size={18} />
                       </button>
-                      <button className="text-red-600 hover:text-red-900">
+                      <button
+                        onClick={() => handleDeleteSalon(salon.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -168,7 +168,23 @@ const AdminSalons = () => {
         </div>
       </div>
 
-      {showAddModal && <AddSalonModal />}
+      {showAddModal && (
+        <AddSalonModal
+          onClose={() => setShowAddModal(false)}
+          onAdd={handleAddSalon}
+        />
+      )}
+
+      {showEditModal && selectedSalon && (
+        <EditSalonModal
+          salon={selectedSalon}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedSalon(null);
+          }}
+          onUpdate={handleEditSalon}
+        />
+      )}
     </div>
   );
 };

@@ -47,3 +47,14 @@ export const dayMap2 = {
   'Vendredi' :5,
   'Samedi':6
 } as const;
+
+
+export interface Salon {
+  id: string;
+  name: string;
+  address: string;
+  manager: string;
+  email: string;
+  phone: string;
+  status: 'active' | 'inactive';
+}

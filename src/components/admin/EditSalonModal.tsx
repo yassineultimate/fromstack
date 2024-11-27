@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
 
-interface Salon {
-  id: string;
-  name: string;
-  address: string;
-  manager: string;
-  status: 'active' | 'inactive';
-
-   
-  email: string;
-  phone: string;
-   
-}
+import { Salon, SalonManager } from '../../types/salon';
 interface EditSalonModalProps {
   salon: Salon;
   onClose: () => void;
@@ -60,17 +49,7 @@ const EditSalonModal = ({ salon, onClose, onUpdate }: EditSalonModalProps) => {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Manager</label>
-            <input
-              type="text"
-              name="manager"
-              value={formData.manager}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              required
-            />
-          </div>
+           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select

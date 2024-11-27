@@ -27,7 +27,16 @@ export const getSalonsAttributeByID= async (id: number) => {
       throw new Error('Failed to log in');
     }
   }
-
+  export const getsalonsadmin= async () => {
+    
+    try{
+    const response = await axios.get(`${BASE_URL}/salonsadmin`);
+     return response.data; // 
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  }
 
   export const updateImage= async (idsalon: number,imageG:any,type:string ,idimageSLot:string,portfolioImageSlots:number) => {
 

@@ -5,6 +5,7 @@ import ThemeToggle from './ThemeToggle';
 const Header = () => {
   const name = localStorage.getItem('name');
   const user1 = new URL('../assets/icons/user3.png', import.meta.url).href;
+  const isAdmin = localStorage.getItem('role') === 'admin';
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-6">
       <div className="flex items-center flex-1">
@@ -32,7 +33,7 @@ const Header = () => {
           />
           <div>
             <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{name}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Manager</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400"> {isAdmin ? 'Admin' : 'Manager'}</p>
           </div>
         </div>
       </div>

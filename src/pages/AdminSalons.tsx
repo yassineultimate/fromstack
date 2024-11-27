@@ -1,22 +1,42 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
-import { Salon } from '../types/salon';
+import { Salon, SalonManager } from '../types/salon';
 import AddSalonModal from '../components/admin/AddSalonModal';
 import EditSalonModal from '../components/admin/EditSalonModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
+import SalonManagersList from '../components/admin/salon/SalonManagersList';
+import AddManagerModal from '../components/admin/salon/AddManagerModal';
 
 const AdminSalons = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddManagerModal, setShowAddManagerModal] = useState(false);
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
   const [salons, setSalons] = useState<Salon[]>([
     {
       id: '1',
       name: 'Elegance Beauty Salon',
       address: '123 Main St, Paris',
-      manager: 'Sophie Martin',
-      email: 'sophie@elegance.com',
+      managers: [
+        {
+          id: '1',
+          name: 'Sophie Martin',
+          email: 'sophie@elegance.com',
+          phone: '+33 1 23 45 67 89',
+          role: 'primary',
+          joinedAt: '2024-01-15'
+        },
+        {
+          id: '2',
+          name: 'Marie Dubois',
+          email: 'marie@elegance.com',
+          phone: '+33 1 23 45 67 90',
+          role: 'assistant',
+          joinedAt: '2024-02-01'
+        }
+      ],
+      email: 'contact@elegance.com',
       phone: '+33 1 23 45 67 89',
       status: 'active',
     },
@@ -24,8 +44,17 @@ const AdminSalons = () => {
       id: '2',
       name: 'Modern Cuts',
       address: '456 Avenue des Champs-Élysées',
-      manager: 'Jean Dupont',
-      email: 'jean@moderncuts.com',
+      managers: [
+        {
+          id: '3',
+          name: 'Jean Dupont',
+          email: 'jean@moderncuts.com',
+          phone: '+33 1 98 76 54 32',
+          role: 'primary',
+          joinedAt: '2024-01-01'
+        }
+      ],
+      email: 'info@moderncuts.com',
       phone: '+33 1 98 76 54 32',
       status: 'active',
     },
@@ -33,7 +62,7 @@ const AdminSalons = () => {
 
   const { query, setQuery, filteredItems: filteredSalons } = useSearch(
     salons,
-    ['name', 'address', 'manager', 'email', 'phone']
+    ['name', 'address', 'email', 'phone']
   );
 
   const handleAddSalon = (salon: Omit<Salon, 'id'>) => {
@@ -66,6 +95,30 @@ const AdminSalons = () => {
     ));
   };
 
+  const handleAddManager = (salonId: string, managerData: Omit<SalonManager, 'id' | 'joinedAt'>) => {
+    const newManager: SalonManager = {
+      ...managerData,
+      id: Date.now().toString(),
+      joinedAt: new Date().toISOString()
+    };
+
+    setSalons(prev => prev.map(salon =>
+      salon.id === salonId
+        ? { ...salon, managers: [...salon.managers, newManager] }
+        : salon
+    ));
+  };
+
+  const handleRemoveManager = (salonId: string, managerId: string) => {
+    if (window.confirm('Are you sure you want to remove this manager?')) {
+      setSalons(prev => prev.map(salon =>
+        salon.id === salonId
+          ? { ...salon, managers: salon.managers.filter(m => m.id !== managerId) }
+          : salon
+      ));
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -88,83 +141,64 @@ const AdminSalons = () => {
           />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Salon
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Manager
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredSalons.map((salon) => (
-                <tr key={salon.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{salon.name}</div>
-                    <div className="text-sm text-gray-500">{salon.address}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{salon.email}</div>
-                    <div className="text-sm text-gray-500">{salon.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{salon.manager}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleToggleStatus(salon.id)}
-                      className={`inline-flex items-center ${
-                        salon.status === 'active'
-                          ? 'text-green-600'
-                          : 'text-gray-400'
-                      }`}
-                    >
-                      {salon.status === 'active' ? (
-                        <ToggleRight size={20} />
-                      ) : (
-                        <ToggleLeft size={20} />
-                      )}
-                      <span className="ml-2 text-sm">
-                        {salon.status === 'active' ? 'Active' : 'Inactive'}
-                      </span>
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => {
-                          setSelectedSalon(salon);
-                          setShowEditModal(true);
-                        }}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSalon(salon.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="divide-y divide-gray-200">
+          {filteredSalons.map((salon) => (
+            <div key={salon.id} className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">{salon.name}</h2>
+                  <p className="text-gray-500">{salon.address}</p>
+                  <div className="mt-2 text-sm text-gray-600">
+                    <p>Email: {salon.email}</p>
+                    <p>Phone: {salon.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => handleToggleStatus(salon.id)}
+                    className={`inline-flex items-center ${
+                      salon.status === 'active'
+                        ? 'text-green-600'
+                        : 'text-gray-400'
+                    }`}
+                  >
+                    {salon.status === 'active' ? (
+                      <ToggleRight size={20} />
+                    ) : (
+                      <ToggleLeft size={20} />
+                    )}
+                    <span className="ml-2 text-sm">
+                      {salon.status === 'active' ? 'Active' : 'Inactive'}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedSalon(salon);
+                      setShowEditModal(true);
+                    }}
+                    className="text-indigo-600 hover:text-indigo-900"
+                  >
+                    <Edit size={18} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSalon(salon.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <SalonManagersList
+                managers={salon.managers}
+                onAddManager={() => {
+                  setSelectedSalon(salon);
+                  setShowAddManagerModal(true);
+                }}
+                onRemoveManager={(managerId) => handleRemoveManager(salon.id, managerId)}
+              />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -183,6 +217,20 @@ const AdminSalons = () => {
             setSelectedSalon(null);
           }}
           onUpdate={handleEditSalon}
+        />
+      )}
+
+      {showAddManagerModal && selectedSalon && (
+        <AddManagerModal
+          onClose={() => {
+            setShowAddManagerModal(false);
+            setSelectedSalon(null);
+          }}
+          onAdd={(managerData) => {
+            handleAddManager(selectedSalon.id, managerData);
+            setShowAddManagerModal(false);
+            setSelectedSalon(null);
+          }}
         />
       )}
     </div>

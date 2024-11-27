@@ -1,18 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, Mail } from 'lucide-react';
-
+import {loginUserAdmin} from './../../Service/UserAdminService';
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit  = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate admin login - replace with actual authentication
-    localStorage.setItem('token', 'admin-token');
-    localStorage.setItem('role', 'admin');
-    navigate('/admin/salons');
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = await loginUserAdmin(email, password);
+    
+      localStorage.setItem('name', data.name);
+      localStorage.setItem('token', 'user-token');
+      localStorage.setItem('role', 'admin');
+      navigate('/admin/salons');
+    } catch (error) {
+      setError('Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,7 +38,11 @@ const AdminLogin = () => {
           <h2 className="text-2xl font-bold text-gray-900">Admin Portal</h2>
           <p className="text-gray-500 mt-2">Sign in to manage all salons</p>
         </div>
-
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
@@ -43,6 +60,7 @@ const AdminLogin = () => {
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter admin email"
                 required
+                disabled={loading}
               />
               <Mail className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>
@@ -64,6 +82,7 @@ const AdminLogin = () => {
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Enter password"
                 required
+                disabled={loading}
               />
               <Lock className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
             </div>

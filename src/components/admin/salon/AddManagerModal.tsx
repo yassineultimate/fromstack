@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
-import { Salon,SalonManager } from '../../types/salon';
+import { SalonManager } from '../../../types/salon';
 
-interface AddSalonModalProps {
+interface AddManagerModalProps {
   onClose: () => void;
-  onAdd: (salon: Omit<Salon, 'id'>) => void;
+  onAdd: (manager: Omit<SalonManager, 'id' | 'joinedAt'>) => void;
 }
 
-const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
+const AddManagerModal = ({ onClose, onAdd }: AddManagerModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
-    address: '',
-    manager: '',
     email: '',
     phone: '',
-    managers:  [] as SalonManager[],
-    status: 'active' as const
-
+    role: 'assistant' as SalonManager['role']
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,7 +20,9 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
     onClose();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -34,10 +32,12 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-6">
-        <h3 className="text-lg font-semibold mb-4">Add New Salon</h3>
+        <h3 className="text-lg font-semibold mb-4">Add New Manager</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salon Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Manager Name
+            </label>
             <input
               type="text"
               name="name"
@@ -49,21 +49,9 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              required
-            />
-          </div>
-
-          
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
             <input
               type="email"
               name="email"
@@ -75,7 +63,9 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone
+            </label>
             <input
               type="tel"
               name="phone"
@@ -87,15 +77,17 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Role
+            </label>
             <select
-              name="status"
-              value={formData.status}
+              name="role"
+              value={formData.role}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="assistant">Assistant Manager</option>
+              <option value="primary">Primary Manager</option>
             </select>
           </div>
 
@@ -111,7 +103,7 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
               type="submit"
               className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
             >
-              Add Salon
+              Add Manager
             </button>
           </div>
         </form>
@@ -120,4 +112,4 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
   );
 };
 
-export default AddSalonModal;
+export default AddManagerModal;

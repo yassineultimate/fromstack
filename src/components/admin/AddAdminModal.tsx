@@ -11,20 +11,81 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
     name: '',
     email: '',
     Phone: '',
-    password:''
+    password: ''
   });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    email: '',
+    Phone: '',
+    password: ''
+  });
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Validate phone number for exactly 8 digits
+    const phoneRegex = /^\d{8}$/;
+    return phoneRegex.test(phone.trim());
+  };
+
+  const validateEmail = (email: string): boolean => {
+    // Standard email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
+  const validatePassword = (password: string): boolean => {
+    // Password validation: 
+    // At least 8 characters, one uppercase, one lowercase, one number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors = {
+      name: formData.name.trim() ? '' : 'Name is required',
+      email: validateEmail(formData.email) ? '' : 'Invalid email format',
+      Phone: validatePhoneNumber(formData.Phone) ? '' : 'Invalid phone number',
+      password: validatePassword(formData.password) ? '' : 'Password must be at least 8 characters with uppercase, lowercase, and number'
+    };
+
+    setErrors(newErrors);
+
+    // Check if any errors exist
+    return !Object.values(newErrors).some(error => error !== '');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(formData);
-    onClose();
+    
+    // Validate the form before submission
+    if (validateForm()) {
+      // Sanitize inputs before submission
+      const sanitizedData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        Phone: formData.Phone.trim(),
+        password: formData.password
+      };
+
+      onAdd(sanitizedData);
+      onClose();
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value
     }));
+
+    // Clear specific error when user starts typing
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   return (
@@ -39,9 +100,11 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 
+                ${errors.name ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'}`}
               required
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -51,9 +114,11 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 
+                ${errors.email ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'}`}
               required
             />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div>
@@ -63,25 +128,30 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
               name="Phone"
               value={formData.Phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 
+                ${errors.Phone ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'}`}
+              placeholder="Enter 8-digit phone number (e.g., 22042202)"
               required
             />
+            {errors.Phone && <p className="text-red-500 text-xs mt-1">{errors.Phone}</p>}
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
             <input
               type="password"
-              name="password" // Added missing name attribute
+              name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-              placeholder="Enter your password"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 
+                ${errors.password ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'}`}
+              placeholder="Min. 8 chars, uppercase, lowercase, number"
               required
             />
+            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
-         
 
           <div className="flex space-x-3 pt-4">
             <button

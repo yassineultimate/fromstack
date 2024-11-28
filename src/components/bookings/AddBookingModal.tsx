@@ -41,6 +41,81 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [existingUserId, setExistingUserId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Validates phone number with optional country code, 9-15 digits
+    const phoneRegex = /^(\+\d{1,3}[- ]?)?\d{9,15}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validateForm = (): string[] => {
+    const errors: string[] = [];
+
+    // Name validation
+    if (!formData.clientName.trim()) {
+      errors.push("Client name is required");
+    }
+
+    // Email validation
+    if (!formData.clientEmail.trim()) {
+      errors.push("Email is required");
+    } else if (!validateEmail(formData.clientEmail)) {
+      errors.push("Invalid email format");
+    }
+
+    // Phone validation
+    if (!formData.clientPhone.trim()) {
+      errors.push("Phone number is required");
+    } else if (!validatePhoneNumber(formData.clientPhone)) {
+      errors.push("Invalid phone number format");
+    }
+
+    // Service/Package validation
+    if (!formData.serviceId) {
+      errors.push(`Please select a ${isService ? 'service' : 'package'}`);
+    }
+
+    // Staff validation
+    if (!formData.staffId) {
+      errors.push("Please select a staff member");
+    }
+
+    // Date validation
+    if (!formData.date) {
+      errors.push("Date is required");
+    } else {
+      const selectedDate = new Date(formData.date);
+      const today = new Date();
+      if (selectedDate < today) {
+        errors.push("Date cannot be in the past");
+      }
+    }
+
+    // Time validation
+    if (!formData.time) {
+      errors.push("Time is required");
+    }
+
+    // Duration validation
+    const duration = Number(formData.duration);
+    if (isNaN(duration) || duration <= 0) {
+      errors.push("Invalid duration");
+    }
+
+    // Price validation
+    const price = Number(formData.totalPrice);
+    if (isNaN(price) || price < 0) {
+      errors.push("Invalid price");
+    }
+
+    return errors;
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -108,7 +183,9 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    
+    if (error) {
+      setError(null);
+    }
     setFormData(prev => {
       const updates: any = { [name]: value };
       
@@ -147,7 +224,13 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-     
+      const validationErrors = validateForm();
+    
+      if (validationErrors.length > 0) {
+        // Set all validation errors
+        setError(validationErrors.join('. '));
+        return;
+      }
       // Calculate end time based on start time and duration
       const calculateEndTime = (startTime: string, durationMinutes: number) => {
         const [hours, minutes] = startTime.split(':').map(Number);
@@ -248,7 +331,13 @@ const AddBookingModal = ({ onClose, onAdd }: AddBookingModalProps) => {
             Existing user found and details populated
           </div>
         )}
+         {error && (
+          <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
+       
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
             <input

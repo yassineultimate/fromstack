@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Salon,SalonManager } from '../../types/salon';
+import { Salon, SalonManager } from '../../types/salon';
 import { addSalonadmin } from '../../../Service/SalonService';
+
 interface AddSalonModalProps {
   onClose: () => void;
   onAdd: (salon: Omit<Salon, 'id'>) => void;
@@ -8,34 +9,110 @@ interface AddSalonModalProps {
 
 const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
   const [formData, setFormData] = useState({
-    id:null,
+    id: null,
     name: '',
     address: '',
     manager: '',
     email: '',
     phone: '',
-    managers:  [] as SalonManager[],
+    managers: [] as SalonManager[],
     status: 'active' as const
-
   });
+
+  const [errors, setErrors] = useState({
+    name: '',
+    address: '',
+    email: '',
+    phone: '',
+  });
+
+  // Validation functions
+  const validateName = (name: string) => {
+    if (name.trim().length < 2) {
+      return 'Salon name must be at least 2 characters long';
+    }
+    return '';
+  };
+
+  const validateAddress = (address: string) => {
+    if (address.trim().length < 5) {
+      return 'Please provide a complete address';
+    }
+    return '';
+  };
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^\d{8}$/;
+    if (!phoneRegex.test(phone)) {
+      return 'Please enter a valid phone number';
+    }
+    return '';
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Validate the field as it's being changed
+    switch (name) {
+      case 'name':
+        setErrors(prev => ({ ...prev, name: validateName(value) }));
+        break;
+      case 'address':
+        setErrors(prev => ({ ...prev, address: validateAddress(value) }));
+        break;
+      case 'email':
+        setErrors(prev => ({ ...prev, email: validateEmail(value) }));
+        break;
+      case 'phone':
+        setErrors(prev => ({ ...prev, phone: validatePhone(value) }));
+        break;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try{
-      const response = await  addSalonadmin(formData)  
-    onAdd(formData);
-    onClose();
-  } catch (error) {
-    
-    console.error('Error:', error);
-  }
-  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    // Validate all fields before submission
+    const nameError = validateName(formData.name);
+    const addressError = validateAddress(formData.address);
+    const emailError = validateEmail(formData.email);
+    const phoneError = validatePhone(formData.phone);
+
+    // Update errors state
+    setErrors({
+      name: nameError,
+      address: addressError,
+      email: emailError,
+      phone: phoneError
+    });
+
+    // Check if there are any validation errors
+    if (nameError || addressError || emailError || phoneError) {
+      return; // Stop submission if there are errors
+    }
+
+    try {
+      const response = await addSalonadmin(formData);
+      onAdd(formData);
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+      // Optionally, you could set a general error state or show a toast message
+    }
   };
 
   return (
@@ -50,9 +127,12 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                errors.name ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'
+              }`}
               required
             />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -62,12 +142,13 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
               name="address"
               value={formData.address}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                errors.address ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'
+              }`}
               required
             />
+            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </div>
-
-          
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -76,9 +157,12 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                errors.email ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'
+              }`}
               required
             />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div>
@@ -88,12 +172,13 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 ${
+                errors.phone ? 'border-red-500 focus:ring-red-500' : 'focus:ring-primary-500'
+              }`}
               required
             />
+            {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </div>
-
-         
 
           <div className="flex space-x-3 pt-4">
             <button

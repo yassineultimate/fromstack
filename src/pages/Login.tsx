@@ -29,6 +29,10 @@ const Login = () => {
     }
   };
 
+  const handleSupportContact = () => {
+    window.location.href = 'mailto:yassine.harb@gmail.com?subject=Support%20Request';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
@@ -106,13 +110,7 @@ const Login = () => {
                 Se souvenir de moi
               </label>
             </div>
-            <button
-              type="button"
-              className="text-sm font-medium text-purple-600 hover:text-purple-500"
-              disabled={loading}
-            >
-              Mot de passe oublié ?
-            </button>
+          
           </div>
 
           <button
@@ -128,6 +126,7 @@ const Login = () => {
           <p className="text-sm text-gray-600">
             Vous n'avez pas de compte ?{' '}
             <button 
+              onClick={handleSupportContact}
               className="font-medium text-purple-600 hover:text-purple-500"
               disabled={loading}
             >

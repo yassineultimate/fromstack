@@ -1,12 +1,11 @@
 export interface Banner {
   id: string;
-  title: string;
-  subtitle: string;
-  discount: number;
+  Title: string;
+  Subtitle: string;
+  discount: string;
   discountName: string;
-  startDate: string;
-  endDate: string;
+  DateDebut: string;
+  DateFin: string;
   salonId: string;
-  isActive: boolean;
-  image?: string;
+  
 }

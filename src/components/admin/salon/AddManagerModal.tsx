@@ -1,23 +1,38 @@
 import React, { useState } from 'react';
 import { SalonManager } from '../../../types/salon';
+import { resgisterManager } from '../../../../Service/MAnegerService';
+import { Phone } from 'lucide-react';
 
 interface AddManagerModalProps {
+  salonId: string; // Add this prop
   onClose: () => void;
   onAdd: (manager: Omit<SalonManager, 'id' | 'joinedAt'>) => void;
 }
 
-const AddManagerModal = ({ onClose, onAdd }: AddManagerModalProps) => {
+const AddManagerModal = ({salonId, onClose, onAdd }: AddManagerModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    role: 'assistant' as SalonManager['role']
+    password: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(formData);
-    onClose();
+    try {
+      const response = await resgisterManager(
+             
+        formData.name,
+        formData.email, // Fixed: was using name twice
+        formData.password,
+        formData.phone,
+        parseInt(salonId!, 0)
+      );
+      onAdd(formData);
+      onClose();
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   const handleChange = (
@@ -78,17 +93,17 @@ const AddManagerModal = ({ onClose, onAdd }: AddManagerModalProps) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Role
+              Password
             </label>
-            <select
-              name="role"
-              value={formData.role}
+            <input
+              type="password"
+              name="password" // Added missing name attribute
+              value={formData.password}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="assistant">Assistant Manager</option>
-              <option value="primary">Primary Manager</option>
-            </select>
+              placeholder="Enter your password"
+              required
+            />
           </div>
 
           <div className="flex space-x-3 pt-4">

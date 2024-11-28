@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Banner } from '../../types/banner';
+import { getsalonsadmin } from './../../../Service/SalonService';
 
 interface AddBannerModalProps {
   onClose: () => void;
   onAdd: (banner: Omit<Banner, 'id'>) => void;
+}
+
+interface Salon {
+  id: string;
+  name: string;
 }
 
 const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
@@ -15,24 +21,44 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
     startDate: '',
     endDate: '',
     salonId: '',
-    image: '',
-    isActive: true
   });
+
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchSalons = async () => {
+      setLoading(true);
+      try {
+        const response = await getsalonsadmin();
+        setSalons(response.data);
+      } catch (error) {
+        console.error('Error fetching salons:', error);
+      }
+      setLoading(false);
+    };
+    fetchSalons();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAdd({
-      ...formData,
-      discount: Number(formData.discount)
+      Title: formData.title,
+      Subtitle: formData.subtitle,
+      discount: formData.discount,
+      discountName: formData.discountName,
+      DateDebut: formData.startDate,
+      DateFin: formData.endDate,
+      salonId: formData.salonId,
     });
     onClose();
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const value = e.target.type === 'checkbox' 
-      ? (e.target as HTMLInputElement).checked 
+    const value = e.target.type === 'checkbox'
+      ? (e.target as HTMLInputElement).checked
       : e.target.value;
     
     setFormData(prev => ({
@@ -74,7 +100,7 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Discount (%)</label>
               <input
-                type="number"
+                type="text"
                 name="discount"
                 value={formData.discount}
                 onChange={handleChange}
@@ -123,40 +149,23 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Salon ID</label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Select Salon
+            </label>
+            <select
               name="salonId"
               value={formData.salonId}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
               required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image URL</label>
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="isActive"
-              id="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-              Banner is active
-            </label>
+            >
+              <option value="">Select a salon</option>
+              {salons.map(salon => (
+                <option key={salon.id} value={salon.id}>
+                  {salon.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex space-x-3 pt-4">

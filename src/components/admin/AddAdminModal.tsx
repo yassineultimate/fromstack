@@ -10,9 +10,8 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
-    role: 'admin' as const,
-    status: 'active' as const
+    Phone: '',
+    password:''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,39 +60,28 @@ const AddAdminModal = ({ onClose, onAdd }: AddAdminModalProps) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
             <input
               type="tel"
-              name="phone"
-              value={formData.phone}
+              name="Phone"
+              value={formData.Phone}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
               required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select
-              name="role"
-              value={formData.role}
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password" // Added missing name attribute
+              value={formData.password}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="admin">Admin</option>
-              <option value="super_admin">Super Admin</option>
-            </select>
+              placeholder="Enter your password"
+              required
+            />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
+         
 
           <div className="flex space-x-3 pt-4">
             <button

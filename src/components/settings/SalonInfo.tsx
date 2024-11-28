@@ -64,7 +64,7 @@ const SalonInfo = ({ settings, onUpdate }: SalonInfoProps) => {
     }
 
 
-    onUpdate(formData);
+  
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

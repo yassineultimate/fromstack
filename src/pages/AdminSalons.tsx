@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Salon, SalonManager } from '../types/salon';
 import AddSalonModal from '../components/admin/AddSalonModal';
@@ -7,59 +7,34 @@ import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
 import SalonManagersList from '../components/admin/salon/SalonManagersList';
 import AddManagerModal from '../components/admin/salon/AddManagerModal';
-
+import {getsalonsadmin,deletesalon} from './../../Service/SalonService';
+import {deletemanager} from './../../Service/MAnegerService';
 const AdminSalons = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddManagerModal, setShowAddManagerModal] = useState(false);
   const [selectedSalon, setSelectedSalon] = useState<Salon | null>(null);
-  const [salons, setSalons] = useState<Salon[]>([
-    {
-      id: '1',
-      name: 'Elegance Beauty Salon',
-      address: '123 Main St, Paris',
-      managers: [
-        {
-          id: '1',
-          name: 'Sophie Martin',
-          email: 'sophie@elegance.com',
-          phone: '+33 1 23 45 67 89',
-          role: 'primary',
-          joinedAt: '2024-01-15'
-        },
-        {
-          id: '2',
-          name: 'Marie Dubois',
-          email: 'marie@elegance.com',
-          phone: '+33 1 23 45 67 90',
-          role: 'assistant',
-          joinedAt: '2024-02-01'
-        }
-      ],
-      email: 'contact@elegance.com',
-      phone: '+33 1 23 45 67 89',
-      status: 'active',
-    },
-    {
-      id: '2',
-      name: 'Modern Cuts',
-      address: '456 Avenue des Champs-Élysées',
-      managers: [
-        {
-          id: '3',
-          name: 'Jean Dupont',
-          email: 'jean@moderncuts.com',
-          phone: '+33 1 98 76 54 32',
-          role: 'primary',
-          joinedAt: '2024-01-01'
-        }
-      ],
-      email: 'info@moderncuts.com',
-      phone: '+33 1 98 76 54 32',
-      status: 'active',
-    },
-  ]);
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const fetchSalons = async () => {
+    try {
+      setLoading(true);
+      const response = await getsalonsadmin();
+      if (response.success) {
+        setSalons(response.data);
+      }
+    } catch (err) {
+      setError('Failed to fetch salons');
+      console.error('Error fetching salons:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchSalons();
+  }, []);
   const { query, setQuery, filteredItems: filteredSalons } = useSearch(
     salons,
     ['name', 'address', 'email', 'phone']
@@ -81,10 +56,15 @@ const AdminSalons = () => {
     setSelectedSalon(null);
   };
 
-  const handleDeleteSalon = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this salon?')) {
+  const handleDeleteSalon = async (id: string) => {
+    
+    if (window.confirm('Etes-vous sûr de vouloir supprimer ce salon ?')) {
+      try {
+        const response = await deletesalon(id );
       setSalons(prev => prev.filter(salon => salon.id !== id));
-    }
+      } catch (error) {
+      console.error('Error:', error);
+      }}
   };
 
   const handleToggleStatus = (id: string) => {
@@ -95,11 +75,11 @@ const AdminSalons = () => {
     ));
   };
 
-  const handleAddManager = (salonId: string, managerData: Omit<SalonManager, 'id' | 'joinedAt'>) => {
+  const handleAddManager = (salonId: string, managerData: Omit<SalonManager, 'id' >) => {
     const newManager: SalonManager = {
       ...managerData,
       id: Date.now().toString(),
-      joinedAt: new Date().toISOString()
+     
     };
 
     setSalons(prev => prev.map(salon =>
@@ -109,13 +89,18 @@ const AdminSalons = () => {
     ));
   };
 
-  const handleRemoveManager = (salonId: string, managerId: string) => {
-    if (window.confirm('Are you sure you want to remove this manager?')) {
+  const handleRemoveManager = async (salonId: string, managerId: string) => {
+    if (window.confirm('Etes-vous sûr de vouloir supprimer ce gestionnaire ?')) {
+      try {
+        const response = await deletemanager(managerId) ;
       setSalons(prev => prev.map(salon =>
         salon.id === salonId
           ? { ...salon, managers: salon.managers.filter(m => m.id !== managerId) }
           : salon
       ));
+    } catch (error) {
+      console.error('Error:', error);
+    }
     }
   };
 
@@ -154,7 +139,7 @@ const AdminSalons = () => {
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <button
+                {/* <button
                     onClick={() => handleToggleStatus(salon.id)}
                     className={`inline-flex items-center ${
                       salon.status === 'active'
@@ -170,7 +155,7 @@ const AdminSalons = () => {
                     <span className="ml-2 text-sm">
                       {salon.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
-                  </button>
+                  </button>*/}
                   <button
                     onClick={() => {
                       setSelectedSalon(salon);
@@ -222,6 +207,7 @@ const AdminSalons = () => {
 
       {showAddManagerModal && selectedSalon && (
         <AddManagerModal
+        salonId={selectedSalon.id} 
           onClose={() => {
             setShowAddManagerModal(false);
             setSelectedSalon(null);

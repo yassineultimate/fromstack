@@ -1,54 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Plus, Search } from 'lucide-react';
 import { Notification, NotificationType } from '../types/notification';
 import NotificationList from '../components/notifications/NotificationList';
 import AddNotificationModal from '../components/notifications/AddNotificationModal';
-
+import {getallnotif,createNotif,deletenotif} from './../../Service/NotifSercice';
 const AdminNotifications = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<NotificationType | ''>('');
-  
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'New Feature Available',
-      message: 'Online booking is now available for all salons',
-      type: 'all',
-      createdAt: new Date().toISOString(),
-      isRead: false
-    },
-    {
-      id: '2',
-      title: 'Maintenance Notice',
-      message: 'System maintenance scheduled for tonight',
-      type: 'salon',
-      targetId: 'salon123',
-      createdAt: new Date().toISOString(),
-      isRead: true
-    }
-  ]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
-  const handleAddNotification = (notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      isRead: false
-    };
-    setNotifications(prev => [newNotification, ...prev]);
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      // Replace {userId} with actual user ID from your auth system
+         // Update this with actual user ID
+      const response = await getallnotif();
+      setNotifications(response);
+      setError('');
+    } catch (err) {
+      setError('Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleAddNotification = async (notification: Omit<Notification, 'id' | 'createdAt' | 'isRead'>) => {
+    try {
+      const response = await createNotif(notification);
+  
+      const newNotification: Notification = {
+        ...notification,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        isRead: false
+      };
+      setNotifications(prev => [newNotification, ...prev]);
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Error adding notification:', err);
+      // Handle error (you might want to show an error message to the user)
+    }
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await deletenotif(id);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+      // Handle error
+    }
   };
 
   const filteredNotifications = notifications.filter(notification => {
     const matchesSearch = 
       notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      notification.message.toLowerCase().includes(searchQuery.toLowerCase());
+      notification.description.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesType = !selectedType || notification.type === selectedType;
+    const matchesType = !selectedType || notification.typeNotif === selectedType;
 
     return matchesSearch && matchesType;
   });
@@ -86,8 +102,9 @@ const AdminNotifications = () => {
             >
               <option value="">All Types</option>
               <option value="all">Global</option>
-              <option value="salon">Salons</option>
-              <option value="client">Clients</option>
+              <option value="Salons">Salons</option>
+              <option value="Message">Message</option>
+              <option value="offer">offer</option>
             </select>
           </div>
         </div>

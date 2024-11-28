@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Salon,SalonManager } from '../../types/salon';
-
+import { addSalonadmin } from '../../../Service/SalonService';
 interface AddSalonModalProps {
   onClose: () => void;
   onAdd: (salon: Omit<Salon, 'id'>) => void;
@@ -8,6 +8,7 @@ interface AddSalonModalProps {
 
 const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
   const [formData, setFormData] = useState({
+    id:null,
     name: '',
     address: '',
     manager: '',
@@ -18,10 +19,16 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
 
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try{
+      const response = await  addSalonadmin(formData)  
     onAdd(formData);
     onClose();
+  } catch (error) {
+    
+    console.error('Error:', error);
+  }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -86,18 +93,7 @@ const AddSalonModal = ({ onClose, onAdd }: AddSalonModalProps) => {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
+         
 
           <div className="flex space-x-3 pt-4">
             <button

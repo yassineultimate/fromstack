@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { updateSalonadmin } from '../../../Service/SalonService';
 import { Salon, SalonManager } from '../../types/salon';
 interface EditSalonModalProps {
   salon: Salon;
@@ -10,9 +10,20 @@ interface EditSalonModalProps {
 const EditSalonModal = ({ salon, onClose, onUpdate }: EditSalonModalProps) => {
   const [formData, setFormData] = useState(salon);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     onUpdate(formData);
+
+
+    try{
+      const response = await  updateSalonadmin(parseInt(formData.id!, 0),formData)  
+     
+      onUpdate(formData);
+    
+    } catch (error) {
+   
+      console.error('Error:', error);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -51,16 +62,26 @@ const EditSalonModal = ({ salon, onClose, onUpdate }: EditSalonModalProps) => {
           </div>
            
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              name="status"
-              value={formData.status}
+            <label className="block text-sm font-medium text-gray-700 mb-1">email</label>
+            <input
+              type="text"
+              name="email"
+              value={formData.email}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">phone</label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              required
+            />
           </div>
           <div className="flex space-x-3 pt-4">
             <button

@@ -1,5 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Notification, NotificationType } from '../../types/notification';
+import {getalluser} from './../../../Service/USerService';
+import {getsalonsadmin} from './../../../Service/SalonService';
+import {createNotif} from './../../../Service/NotifSercice';
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  // Add other user properties as needed
+}
+
+interface Salon {
+  id: string;
+  name: string;
+  // Add other salon properties as needed
+}
 
 interface AddNotificationModalProps {
   onClose: () => void;
@@ -9,30 +24,98 @@ interface AddNotificationModalProps {
 const AddNotificationModal = ({ onClose, onAdd }: AddNotificationModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
-    message: '',
-    type: 'all' as NotificationType,
+    description: '',
+    typeNotif: 'Global' as NotificationType,
     targetId: '',
     expiresAt: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [salons, setSalons] = useState<Salon[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch users when needed
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await getalluser(); // Replace with your API endpoint
+    
+      setUsers(response);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+    setLoading(false);
+  };
+
+  // Fetch salons when needed
+  const fetchSalons = async () => {
+    setLoading(true);
+    try {
+      const response = await getsalonsadmin(); // Replace with your API endpoint
+     
+      setSalons(response.data);
+    } catch (error) {
+      console.error('Error fetching salons:', error);
+    }
+    setLoading(false);
+  };
+
+  // Handle type change and fetch appropriate data
+  useEffect(() => {
+    if (formData.typeNotif === 'offer' || formData.typeNotif === 'Message') {
+      fetchUsers();
+    } else if (formData.typeNotif === 'Salons') {
+      fetchSalons();
+    }
+  }, [formData.typeNotif]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd({
+    let UserId;
+    let SalonId ;
+   
+    // Create notification object
+    if (formData.typeNotif === 'offer' || formData.typeNotif === 'Message') {
+      UserId = formData.targetId;
+    } else if (formData.typeNotif === 'Salons') {
+      SalonId = formData.targetId;
+    }
+
+    const notification = {
       title: formData.title,
-      message: formData.message,
-      type: formData.type,
-      ...(formData.targetId && { targetId: formData.targetId }),
-      ...(formData.expiresAt && { expiresAt: formData.expiresAt })
-    });
-    onClose();
+      description: formData.description,
+      typeNotif: formData.typeNotif,
+      UserId,
+      SalonId,
+      dateTime:formData.expiresAt
+    
+    };
+
+
+    try {
+      // Save notification to backend
+      const response = await createNotif(notification)
+       
+      
+
+      // Call the onAdd callback with the new notification
+      onAdd(notification);
+      onClose();
+    } catch (error) {
+      console.error('Error saving notification:', error);
+      // Handle error (show error message to user)
+    }
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
+    const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value,
+      // Reset targetId when type changes
+      ...(name === 'typeNotif' && { targetId: '' }),
     }));
   };
 
@@ -56,8 +139,8 @@ const AddNotificationModal = ({ onClose, onAdd }: AddNotificationModalProps) => 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
             <textarea
-              name="message"
-              value={formData.message}
+              name="description"
+              value={formData.description}
               onChange={handleChange}
               rows={3}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -68,30 +151,59 @@ const AddNotificationModal = ({ onClose, onAdd }: AddNotificationModalProps) => 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <select
-              name="type"
-              value={formData.type}
+              name="typeNotif"
+              value={formData.typeNotif}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
             >
-              <option value="all">Global</option>
-              <option value="salon">Salon Specific</option>
-              <option value="client">Client Specific</option>
+              <option value="Global">Global</option>
+              <option value="Salons">Salon Specific</option>
+              <option value="offer">Offer</option>
+              <option value="Message">Message</option>
             </select>
           </div>
 
-          {formData.type !== 'all' && (
+          {(formData.typeNotif === 'offer' || formData.typeNotif === 'Message') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.type === 'salon' ? 'Salon ID' : 'Client ID'}
+                Select User
               </label>
-              <input
-                type="text"
+              <select
                 name="targetId"
                 value={formData.targetId}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
                 required
-              />
+              >
+                <option value="">Select a user</option>
+                {users.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {formData.typeNotif === 'Salons' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Salon
+              </label>
+              <select
+                name="targetId"
+                value={formData.targetId}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500"
+                required
+              >
+                <option value="">Select a salon</option>
+                {salons.map(salon => (
+                  <option key={salon.id} value={salon.id}>
+                    {salon.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 
@@ -108,6 +220,10 @@ const AddNotificationModal = ({ onClose, onAdd }: AddNotificationModalProps) => 
             />
           </div>
 
+          {loading && (
+            <div className="text-center text-gray-600">Loading...</div>
+          )}
+
           <div className="flex space-x-3 pt-4">
             <button
               type="button"
@@ -119,6 +235,7 @@ const AddNotificationModal = ({ onClose, onAdd }: AddNotificationModalProps) => 
             <button
               type="submit"
               className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              disabled={loading}
             >
               Send Notification
             </button>

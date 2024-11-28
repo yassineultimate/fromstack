@@ -15,6 +15,14 @@ interface SalonUpdateData {
   Phone: string;
   adresse: string;
 }
+interface SalonUpdateDataAdmin {
+  name: string;
+  adresse: string;
+  email: string;
+ 
+  Phone: string;
+ 
+}
 
 
 export const getSalonsAttributeByID= async (id: number) => {
@@ -30,7 +38,7 @@ export const getSalonsAttributeByID= async (id: number) => {
   export const getsalonsadmin= async () => {
     
     try{
-    const response = await axios.get(`${BASE_URL}/salonsadmin`);
+    const response = await axios.get(`${BASE_URL}/salons-with-managers/all`);
      return response.data; // 
     } catch (error) {
       console.log('Axios error:', error);
@@ -103,4 +111,55 @@ export const getSalonsAttributeByID= async (id: number) => {
           }
         };
        
+
+        export const updateSalonadmin = async (salonId: number, formData: any): Promise<any> => {
+          try {
+            // Restructure the data according to the specified format
+            const updatePayload: SalonUpdateDataAdmin = {
+              name: formData.name,
+              adresse: formData.address,
+              email: formData.email,
+              Phone: formData.phone,
+           
+            };
         
+            // Make the API call with the restructured payload
+            const response = await axios.put(`${BASE_URL}/salonupdateadmin/${salonId}`, updatePayload);
+            
+            return response.data;
+          } catch (error) {
+            console.error('Error updating salon:', error);
+            throw error;
+          }
+        };
+
+
+        export const addSalonadmin = async ( formData: any): Promise<any> => {
+          try {
+            // Restructure the data according to the specified format
+            const updatePayload: SalonUpdateDataAdmin = {
+              name: formData.name,
+              adresse: formData.address,
+              email: formData.email,
+              Phone: formData.phone,
+           
+            };
+        
+            // Make the API call with the restructured payload
+            const response = await axios.post(`${BASE_URL}/create/admin`, updatePayload);
+            
+            return response.data;
+          } catch (error) {
+            console.error('Error updating salon:', error);
+            throw error;
+          }
+        };
+          export const deletesalon = async (id:string ) => {
+          try {
+            const response = await axios.delete(`${BASE_URL}/deletsalon/${ id }`)
+            return response.data;
+          } catch (error) {
+            console.log('Axios error:', error);
+            throw new Error('Failed to log in');
+          }
+        };

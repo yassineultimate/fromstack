@@ -28,16 +28,7 @@ const SalonManagersList = ({ managers, onAddManager, onRemoveManager }: SalonMan
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div className="flex-1">
-              <div className="flex items-center">
-                <span className="font-medium text-gray-900">{manager.name}</span>
-                <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
-                  manager.role === 'primary' 
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {manager.role === 'primary' ? 'Primary' : 'Assistant'}
-                </span>
-              </div>
+             
               <div className="mt-1 text-sm text-gray-500 space-y-1">
                 <div className="flex items-center">
                   <Mail size={14} className="mr-2" />

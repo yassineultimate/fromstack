@@ -17,8 +17,7 @@ export interface SalonManager {
   name: string;
   email: string;
   phone: string;
-  role: 'primary' | 'assistant';
-  joinedAt: string;
+  password: string;
 }
 
 export interface SalonSettings {

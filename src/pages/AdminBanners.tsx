@@ -1,56 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Banner } from '../types/banner';
 import BannerList from '../components/banners/BannerList';
 import AddBannerModal from '../components/banners/AddBannerModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
+import {allbanner,createBanner,deletebanner } from './../../Service/BannerService';
 
 const AdminBanners = () => { 
    const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const [banners, setBanners] = useState<Banner[]>([
-    {
-      id: '1',
-      title: 'Summer Special',
-      subtitle: 'Get ready for summer with our special offers',
-      discount: 20,
-      discountName: 'SUMMER20',
-      startDate: '2024-06-01',
-      endDate: '2024-08-31',
-      salonId: 'salon123',
-      isActive: true,
-      image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
-    }
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [banners, setBanners] = useState<Banner[]>([]);
+   
+  useEffect(() => {
+    fetchbanner();
+  }, []);
 
-  const handleAddBanner = (banner: Omit<Banner, 'id'>) => {
+  const fetchbanner = async () => {
+    try {
+      setLoading(true);
+      // Replace {userId} with actual user ID from your auth system
+         // Update this with actual user ID
+      const response = await allbanner();
+      setBanners(response);
+      setError('');
+    } catch (err) {
+      setError('Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleAddBanner = async  (banner: Omit<Banner, 'id'>) => {
+    try {
+      const response = await createBanner(banner);
     const newBanner: Banner = {
       ...banner,
       id: Date.now().toString()
     };
     setBanners(prev => [...prev, newBanner]);
+
+  } catch (err) {
+    console.error('Error adding notification:', err);
+    // Handle error (you might want to show an error message to the user)
+  }
   };
 
-  const handleDeleteBanner = (id: string) => {
+  const handleDeleteBanner =  async (id: string) => {
+    try {
+      await deletebanner(id);
     setBanners(prev => prev.filter(b => b.id !== id));
+
+  } catch (err) {
+    console.error('Error adding notification:', err);
+    // Handle error (you might want to show an error message to the user)
+  }
   };
 
-  const handleToggleActive = (id: string) => {
-    setBanners(prev => prev.map(banner => 
-      banner.id === id ? { ...banner, isActive: !banner.isActive } : banner
-    ));
-  };
+ 
 
  
 
   const { query, setQuery, filteredItems: filteredBanners } = useSearch(
     banners,
-    ['title', 'subtitle', 'discountName']
+    ['Title', 'Subtitle', 'discountName']
   );
 
-  // ... rest of your existing code ...
+ 
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -76,7 +94,7 @@ const AdminBanners = () => {
         <BannerList
           banners={filteredBanners}
           onDelete={handleDeleteBanner}
-          onToggleActive={handleToggleActive}
+        
         />
       </div>
 

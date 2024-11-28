@@ -14,6 +14,15 @@ export const getUserById = async (id: number) => {
       throw new Error('Failed to log in');
     }
   };
+  export const getalluser = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/getalls/all`);
+      return response.data;
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  };
 
 
   export const getUserByMail = async (userMail: string) => {

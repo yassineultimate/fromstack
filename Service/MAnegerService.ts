@@ -20,13 +20,16 @@ export const getUserById = async (id: number) => {
   
 
 
-  export const resgisterManager = async (Phone: string ,name: string,email: string,password:string ) => {
+  export const resgisterManager = async (name: string,email: string,phone: string ,password:string ,SalonId:number) => {
     try {
       const response = await axios.post(`${API_URL}/register`,{
         name,
         email,
         password,
-        Phone,
+        phone,
+        SalonId,
+      
+       
       });
       return response.data;
     } catch (error) {
@@ -43,6 +46,17 @@ export const getUserById = async (id: number) => {
         password,
       
       });
+      return response.data;
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  };
+
+
+  export const deletemanager = async (idmanager:string ) => {
+    try {
+      const response = await axios.delete(`${API_URL}/deletManager/${ idmanager }`)
       return response.data;
     } catch (error) {
       console.log('Axios error:', error);

@@ -1,60 +1,69 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Admin } from '../types/admin';
 import AddAdminModal from '../components/admin/AddAdminModal';
 import SearchInput from '../components/common/SearchInput';
 import { useSearch } from '../hooks/useSearch';
+import {getAlluseradmin,createadmin,deleteadmin } from './../../Service/UserAdminService';
 
 const AdminSettings = () => {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [admins, setAdmins] = useState<Admin[]>([
-    {
-      id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '+1 234 567 890',
-      role: 'super_admin',
-      status: 'active',
-      lastLogin: '2024-03-19T10:30:00Z'
-    },
-    {
-      id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '+1 234 567 891',
-      role: 'admin',
-      status: 'active',
-      lastLogin: '2024-03-18T15:45:00Z'
-    }
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [admins, setAdmins] = useState<Admin[]>([]);
+ 
+  useEffect(() => {
+    fetchuserlogin();
+  }, []);
 
+  const fetchuserlogin= async () => {
+    try {
+      setLoading(true);
+      // Replace {userId} with actual user ID from your auth system
+         // Update this with actual user ID
+      const response = await getAlluseradmin();
+      setAdmins(response);
+      setError('');
+    } catch (err) {
+      setError('Failed to fetch notifications');
+      console.error('Error fetching notifications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
   const { query, setQuery, filteredItems: filteredAdmins } = useSearch(
     admins,
-    ['name', 'email', 'phone']
+    ['name', 'email', 'Phone']
   );
 
-  const handleAddAdmin = (admin: Omit<Admin, 'id' | 'lastLogin'>) => {
+  const handleAddAdmin = async (admin: Omit<Admin, 'id' | 'lastLogin'>) => {
+    try {
+      const response = await createadmin(admin);
     const newAdmin: Admin = {
       ...admin,
       id: Date.now().toString(),
-      lastLogin: new Date().toISOString()
+       
     };
     setAdmins(prev => [...prev, newAdmin]);
+  } catch (err) {
+    console.error('Error adding notification:', err);
+    // Handle error (you might want to show an error message to the user)
+  }
   };
 
-  const handleDeleteAdmin = (id: string) => {
+  const handleDeleteAdmin = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this admin?')) {
+      try {
+        await deleteadmin(id);
       setAdmins(prev => prev.filter(admin => admin.id !== id));
+    } catch (err) {
+      console.error('Error adding notification:', err);
+      // Handle error (you might want to show an error message to the user)
+    }
     }
   };
 
-  const handleToggleStatus = (id: string) => {
-    setAdmins(prev => prev.map(admin =>
-      admin.id === id
-        ? { ...admin, status: admin.status === 'active' ? 'inactive' : 'active' }
-        : admin
-    ));
-  };
+   
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
@@ -88,15 +97,7 @@ const AdminSettings = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Contact
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Login
-                </th>
+                
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -110,39 +111,11 @@ const AdminSettings = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{admin.email}</div>
-                    <div className="text-sm text-gray-500">{admin.phone}</div>
+                    <div className="text-sm text-gray-500">{admin.Phone}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      admin.role === 'super_admin'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {admin.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => handleToggleStatus(admin.id)}
-                      className={`inline-flex items-center ${
-                        admin.status === 'active'
-                          ? 'text-green-600'
-                          : 'text-gray-400'
-                      }`}
-                    >
-                      {admin.status === 'active' ? (
-                        <ToggleRight size={20} />
-                      ) : (
-                        <ToggleLeft size={20} />
-                      )}
-                      <span className="ml-2 text-sm">
-                        {admin.status === 'active' ? 'Active' : 'Inactive'}
-                      </span>
-                    </button>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(admin.lastLogin!).toLocaleString()}
-                  </td>
+                   
+                 
+                   
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button
                       onClick={() => handleDeleteAdmin(admin.id)}

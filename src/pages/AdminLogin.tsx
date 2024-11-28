@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Lock, Mail } from 'lucide-react';
 import {loginUserAdmin} from './../../Service/UserAdminService';
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -16,13 +17,12 @@ const AdminLogin = () => {
 
     try {
       const data = await loginUserAdmin(email, password);
-    
       localStorage.setItem('name', data.name);
       localStorage.setItem('token', 'user-token');
       localStorage.setItem('role', 'admin');
       navigate('/admin/salons');
     } catch (error) {
-      setError('Invalid email or password');
+      setError('Email ou mot de passe invalide');
     } finally {
       setLoading(false);
     }
@@ -35,21 +35,23 @@ const AdminLogin = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
             <Shield className="h-8 w-8 text-indigo-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Admin Portal</h2>
-          <p className="text-gray-500 mt-2">Sign in to manage all salons</p>
+          <h2 className="text-2xl font-bold text-gray-900">Portail Administrateur</h2>
+          <p className="text-gray-500 mt-2">Connectez-vous pour gérer tous les salons</p>
         </div>
+        
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-500 rounded-lg text-sm">
             {error}
           </div>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Admin Email
+              Email Administrateur
             </label>
             <div className="relative">
               <input
@@ -58,7 +60,7 @@ const AdminLogin = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter admin email"
+                placeholder="Entrez l'email administrateur"
                 required
                 disabled={loading}
               />
@@ -71,7 +73,7 @@ const AdminLogin = () => {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Password
+              Mot de passe
             </label>
             <div className="relative">
               <input
@@ -80,7 +82,7 @@ const AdminLogin = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter password"
+                placeholder="Entrez votre mot de passe"
                 required
                 disabled={loading}
               />
@@ -92,7 +94,7 @@ const AdminLogin = () => {
             type="submit"
             className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
           >
-            Sign In as Admin
+            Connexion Administrateur
           </button>
         </form>
       </div>

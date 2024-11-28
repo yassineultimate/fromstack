@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Scissors, Lock, Mail } from 'lucide-react';
- 
-import {loginManager} from './../../Service/MAnegerService';
- 
+import { loginManager } from './../../Service/MAnegerService';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,7 +10,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
- 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -26,7 +23,7 @@ const Login = () => {
       localStorage.setItem('role', 'user');
       navigate('/dashboard');
     } catch (error) {
-      setError('Invalid email or password');
+      setError('Email ou mot de passe invalide');
     } finally {
       setLoading(false);
     }
@@ -39,8 +36,8 @@ const Login = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
             <Scissors className="h-8 w-8 text-purple-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-          <p className="text-gray-500 mt-2">Sign in to manage your salon</p>
+          <h2 className="text-2xl font-bold text-gray-900">Bon retour</h2>
+          <p className="text-gray-500 mt-2">Connectez-vous pour gérer votre salon</p>
         </div>
 
         {error && (
@@ -55,7 +52,7 @@ const Login = () => {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Email Address
+              Adresse Email
             </label>
             <div className="relative">
               <input
@@ -64,7 +61,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter your email"
+                placeholder="Entrez votre email"
                 required
                 disabled={loading}
               />
@@ -77,7 +74,7 @@ const Login = () => {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Password
+              Mot de passe
             </label>
             <div className="relative">
               <input
@@ -86,7 +83,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="Enter your password"
+                placeholder="Entrez votre mot de passe"
                 required
                 disabled={loading}
               />
@@ -106,7 +103,7 @@ const Login = () => {
                 htmlFor="remember-me"
                 className="ml-2 block text-sm text-gray-700"
               >
-                Remember me
+                Se souvenir de moi
               </label>
             </div>
             <button
@@ -114,7 +111,7 @@ const Login = () => {
               className="text-sm font-medium text-purple-600 hover:text-purple-500"
               disabled={loading}
             >
-              Forgot password?
+              Mot de passe oublié ?
             </button>
           </div>
 
@@ -123,18 +120,18 @@ const Login = () => {
             className="w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors disabled:bg-purple-300"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Vous n'avez pas de compte ?{' '}
             <button 
               className="font-medium text-purple-600 hover:text-purple-500"
               disabled={loading}
             >
-              Contact Support
+              Contactez le support
             </button>
           </p>
         </div>

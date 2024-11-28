@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bell, Search } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
- 
+import NotificationViewer from './notifications/NotificationViewer';
+import { useNotifications } from '../hooks/useNotifications';
+
 const Header = () => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { notifications, unreadCount, markAsRead } = useNotifications();
   const name = localStorage.getItem('name');
   const user1 = new URL('../assets/icons/user3.png', import.meta.url).href;
   const isAdmin = localStorage.getItem('role') === 'admin';
@@ -21,10 +25,25 @@ const Header = () => {
 
       <div className="flex items-center space-x-4">
         <ThemeToggle />
-        <button className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-          <Bell size={20} />
-          <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-xs text-white">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          <NotificationViewer
+            notifications={notifications}
+            isOpen={showNotifications}
+            onClose={() => setShowNotifications(false)}
+            onMarkAsRead={markAsRead}
+          />
+        </div>
         <div className="flex items-center space-x-3">
           <img
             src={user1}

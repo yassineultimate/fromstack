@@ -46,6 +46,31 @@ export const getnotreadNotif= async (id: number) => {
     }
   }
 
+
+  export const getallnotifbyuser= async (iduser:string) => {
+    
+    try{
+    const response = await axios.get(`${API_URL}/all/upcomingusers/${ iduser }`);
+     return response.data; // 
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  }
+
+  
+  export const getallnotifbysalon= async (idsalon:number) => {
+    
+    try{
+    const response = await axios.get(`${API_URL}/all/upcomingsalon/${ idsalon }`);
+     return response.data; // 
+    } catch (error) {
+      console.log('Axios error:', error);
+      throw new Error('Failed to log in');
+    }
+  }
+
+
   export const deletenotif= async (id: string) => {
     
     try{

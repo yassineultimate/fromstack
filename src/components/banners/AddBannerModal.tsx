@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,useRef, useEffect } from 'react';
 import { Banner } from '../../types/banner';
 import { getsalonsadmin } from './../../../Service/SalonService';
 
@@ -13,6 +13,8 @@ interface Salon {
 }
 
 const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     subtitle: '',
@@ -21,6 +23,7 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
     startDate: '',
     endDate: '',
     salonId: '',
+    image:''
   });
 
   const [salons, setSalons] = useState<Salon[]>([]);
@@ -50,6 +53,7 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
       DateDebut: formData.startDate,
       DateFin: formData.endDate,
       salonId: formData.salonId,
+      image: selectedImage || formData.image
     });
     onClose();
   };
@@ -66,7 +70,19 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
       [e.target.name]: value
     }));
   };
-
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg w-full max-w-md p-6">
@@ -166,6 +182,37 @@ const AddBannerModal = ({ onClose, onAdd }: AddBannerModalProps) => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image service
+            </label>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <div className="mt-1 flex items-center space-x-4">
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Choose File
+              </button>
+              {selectedImage && (
+                <div className="relative w-16 h-16">
+                  <img
+                    src={selectedImage}
+                    alt="Preview"
+                    className="w-16 h-16 object-cover rounded"
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

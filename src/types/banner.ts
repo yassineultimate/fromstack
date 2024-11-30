@@ -7,5 +7,6 @@ export interface Banner {
   DateDebut: string;
   DateFin: string;
   salonId: string;
+  image:string
   
 }

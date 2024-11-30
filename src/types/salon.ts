@@ -40,6 +40,12 @@ export interface Salon {
   phone: string;
   status: 'active' | 'inactive';
 }
+
+export interface Category {
+  id: string;
+  name: string;
+ 
+}
 export const dayMap = {
   0:'Dimanche',
   1:'Lundi' ,

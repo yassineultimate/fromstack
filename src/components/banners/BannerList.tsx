@@ -20,7 +20,7 @@ const BannerList = ({ banners, onDelete }: BannerListProps) => {
             
               <div className="w-48">
                 <img
-                  src='https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'
+                  src={banner.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80'}
                   alt={banner.Title}
                   className="w-full h-full object-cover"
                 />

@@ -21,6 +21,7 @@ interface SalonUpdateDataAdmin {
   email: string;
  
   Phone: string;
+  CategoryId:string;
  
 }
 
@@ -120,7 +121,7 @@ export const getSalonsAttributeByID= async (id: number) => {
               adresse: formData.address,
               email: formData.email,
               Phone: formData.phone,
-           
+              CategoryId:formData.CategoryId
             };
         
             // Make the API call with the restructured payload
@@ -142,6 +143,8 @@ export const getSalonsAttributeByID= async (id: number) => {
               adresse: formData.address,
               email: formData.email,
               Phone: formData.phone,
+              CategoryId: formData.categoryId
+              ,
            
             };
         

@@ -20,13 +20,13 @@ export const getUserById = async (id: number) => {
   
 
 
-  export const resgisterManager = async (name: string,email: string,phone: string ,password:string ,SalonId:number) => {
+  export const resgisterManager = async (name: string,email: string,password: string ,Phone:string ,SalonId:number) => {
     try {
       const response = await axios.post(`${API_URL}/register`,{
         name,
         email,
         password,
-        phone,
+        Phone,
         SalonId,
       
        

@@ -11,7 +11,7 @@ interface SalonUpdateData {
     type: string;
     coordinates: [number | null, number | null];
   };
-  DurreRendezvous: number | null;
+  DureeRendezVous: number | null;
   Phone: string;
   adresse: string;
 }
@@ -97,7 +97,7 @@ export const getSalonsAttributeByID= async (id: number) => {
                 type: 'Point', // Explicitly set the type
                 coordinates: [formData.longitude, formData.latitude] // Note the order: [longitude, latitude]
               },
-              DurreRendezvous: formData.durreRendezvous,
+              DureeRendezVous: formData.durreRendezvous,
               Phone: formData.phone,
               adresse: formData.address
             };
